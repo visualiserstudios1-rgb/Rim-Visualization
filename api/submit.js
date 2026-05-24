@@ -1,4 +1,6 @@
-// /api/submit.js — Fixed Vercel Serverless Function
+// /api/submit.js — Vercel Serverless Function
+// Images are uploaded directly to Cloudinary from browser
+// This endpoint only handles email sending
 
 const rateLimit = new Map();
 const RATE_LIMIT_MAX = 5;
@@ -22,7 +24,7 @@ function sanitize(value) {
   return value.replace(/<[^>]*>/g, '').trim();
 }
 
-function validateInputs({ name, email, phone, rimSize }) {
+function validateInputs({ name, email, phone, rimSize, rimImageUrl, vehicleImageUrl }) {
   const errors = [];
   if (!name || name.length < 2 || name.length > 100)
     errors.push('Name must be between 2 and 100 characters.');
@@ -34,29 +36,12 @@ function validateInputs({ name, email, phone, rimSize }) {
   const validSizes = ['17', '18', '19', '20', '21', '22', '23'];
   if (!rimSize || !validSizes.includes(rimSize))
     errors.push('Please select a valid rim size.');
+  const urlRegex = /^https:\/\/res\.cloudinary\.com\/.+/;
+  if (!rimImageUrl || !urlRegex.test(rimImageUrl))
+    errors.push('Invalid rim image URL.');
+  if (!vehicleImageUrl || !urlRegex.test(vehicleImageUrl))
+    errors.push('Invalid vehicle image URL.');
   return errors;
-}
-
-async function uploadToCloudinary(base64Data) {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
-
-  const body = new URLSearchParams();
-  body.append('file', base64Data);
-  body.append('upload_preset', uploadPreset);
-
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-    { method: 'POST', body }
-  );
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error?.message || 'Image upload failed');
-  }
-
-  return data.secure_url;
 }
 
 export default async function handler(req, res) {
@@ -88,28 +73,16 @@ export default async function handler(req, res) {
   }
 
   // Sanitize inputs
-  const name    = sanitize(req.body?.name);
-  const email   = sanitize(req.body?.email);
-  const phone   = sanitize(req.body?.phone);
-  const rimSize = sanitize(req.body?.rimSize);
-  const rimImageBase64     = req.body?.rimImageBase64;
-  const vehicleImageBase64 = req.body?.vehicleImageBase64;
+  const name           = sanitize(req.body?.name);
+  const email          = sanitize(req.body?.email);
+  const phone          = sanitize(req.body?.phone);
+  const rimSize        = sanitize(req.body?.rimSize);
+  const rimImageUrl    = sanitize(req.body?.rimImageUrl);
+  const vehicleImageUrl = sanitize(req.body?.vehicleImageUrl);
 
   // Validate
-  const errors = validateInputs({ name, email, phone, rimSize });
+  const errors = validateInputs({ name, email, phone, rimSize, rimImageUrl, vehicleImageUrl });
   if (errors.length > 0) return res.status(400).json({ error: errors.join(' ') });
-  if (!rimImageBase64 || !vehicleImageBase64) {
-    return res.status(400).json({ error: 'Both images are required.' });
-  }
-
-  // Upload images to Cloudinary
-  let rimImageUrl, vehicleImageUrl;
-  try {
-    rimImageUrl     = await uploadToCloudinary(rimImageBase64);
-    vehicleImageUrl = await uploadToCloudinary(vehicleImageBase64);
-  } catch (err) {
-    return res.status(500).json({ error: 'Image upload failed. Please try again.' });
-  }
 
   // Send email via EmailJS
   try {
