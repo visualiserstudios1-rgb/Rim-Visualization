@@ -1,10 +1,30 @@
-// ============================================================
-// App.js — Secure Frontend
-// NO API keys, NO secrets, NO console.log of sensitive data
-// All API calls go through /api/submit (serverless backend)
-// ============================================================
+// App.js — Images upload directly to Cloudinary from browser
+// Only Cloudinary cloud name + preset are needed here (safe for frontend)
+// All email sending stays on the secure backend
 
 import { useState, useEffect } from 'react';
+
+const CLOUDINARY_CLOUD_NAME   = 'dfyjxhjce';
+const CLOUDINARY_UPLOAD_PRESET = 'rimviz_uploads';
+
+async function uploadToCloudinary(file, onProgress) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    { method: 'POST', body: formData }
+  );
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || 'Upload failed');
+  }
+
+  const data = await res.json();
+  return data.secure_url;
+}
 
 function useScreenSize() {
   const [width, setWidth] = useState(window.innerWidth);
@@ -20,28 +40,12 @@ function useScreenSize() {
   };
 }
 
-// Convert file to base64 string for sending to backend
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('File read failed'));
-    reader.readAsDataURL(file);
-  });
-}
-
-// Client-side input validation (mirrors server validation)
 function validateForm({ name, email, rimInch, rimImage, vehicleImage }) {
-  if (!name || name.trim().length < 2)
-    return 'Please enter your full name.';
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    return 'Please enter a valid email address.';
-  if (!rimInch)
-    return 'Please select a rim size.';
-  if (!rimImage)
-    return 'Please upload a rim image.';
-  if (!vehicleImage)
-    return 'Please upload a car image.';
+  if (!name || name.trim().length < 2) return 'Please enter your full name.';
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Please enter a valid email address.';
+  if (!rimInch) return 'Please select a rim size.';
+  if (!rimImage) return 'Please upload a rim image.';
+  if (!vehicleImage) return 'Please upload a car image.';
   return null;
 }
 
@@ -60,15 +64,14 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
 
-  // Responsive helpers
-  const heroFontSize      = isMobile ? '36px'  : isTablet ? '52px'  : '72px';
-  const heroSubFontSize   = isMobile ? '15px'  : isTablet ? '18px'  : '22px';
-  const headingFontSize   = isMobile ? '28px'  : isTablet ? '38px'  : '48px';
-  const bodyFontSize      = isMobile ? '15px'  : isTablet ? '16px'  : '18px';
-  const sectionPadding    = isMobile ? '40px 16px' : isTablet ? '60px 32px' : '80px 24px';
-  const galleryColumns    = isMobile ? '1fr'   : 'repeat(2, 1fr)';
-  const galleryImageHeight= isMobile ? '200px' : isTablet ? '280px' : '400px';
-  const galleryGap        = isMobile ? '16px'  : isTablet ? '20px'  : '32px';
+  const heroFontSize       = isMobile ? '36px'     : isTablet ? '52px'     : '72px';
+  const heroSubFontSize    = isMobile ? '15px'     : isTablet ? '18px'     : '22px';
+  const headingFontSize    = isMobile ? '28px'     : isTablet ? '38px'     : '48px';
+  const bodyFontSize       = isMobile ? '15px'     : isTablet ? '16px'     : '18px';
+  const sectionPadding     = isMobile ? '40px 16px': isTablet ? '60px 32px': '80px 24px';
+  const galleryColumns     = isMobile ? '1fr'      : 'repeat(2, 1fr)';
+  const galleryImageHeight = isMobile ? '200px'    : isTablet ? '280px'    : '400px';
+  const galleryGap         = isMobile ? '16px'     : isTablet ? '20px'     : '32px';
 
   const scrollTo = (id) => {
     setMenuOpen(false);
@@ -85,39 +88,34 @@ export default function App() {
     e.preventDefault();
     setFormError('');
 
-    // Client-side validation
     const validationError = validateForm({ ...formData, rimImage, vehicleImage });
-    if (validationError) {
-      setFormError(validationError);
-      return;
-    }
+    if (validationError) { setFormError(validationError); return; }
 
     setSending(true);
-
     try {
-      // Convert images to base64 to send to backend
-      setUploadStatus('Preparing images...');
-      const rimImageBase64     = await fileToBase64(rimImage);
-      const vehicleImageBase64 = await fileToBase64(vehicleImage);
+      // Upload images directly to Cloudinary from browser
+      setUploadStatus('Uploading rim image...');
+      const rimImageUrl = await uploadToCloudinary(rimImage);
 
-      setUploadStatus('Uploading and sending...');
+      setUploadStatus('Uploading car image...');
+      const vehicleImageUrl = await uploadToCloudinary(vehicleImage);
 
-      // Call our secure backend — no keys in this request
+      // Send only the URLs + form data to our secure backend
+      setUploadStatus('Sending request...');
       const response = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name:               formData.name.trim(),
-          email:              formData.email.trim(),
-          phone:              formData.phone.trim(),
-          rimSize:            formData.rimInch,
-          rimImageBase64,
-          vehicleImageBase64,
+          name:         formData.name.trim(),
+          email:        formData.email.trim(),
+          phone:        formData.phone.trim(),
+          rimSize:      formData.rimInch,
+          rimImageUrl,
+          vehicleImageUrl,
         }),
       });
 
       const result = await response.json();
-
       if (!response.ok) {
         setFormError(result.error || 'Something went wrong. Please try again.');
         return;
@@ -125,7 +123,6 @@ export default function App() {
 
       setSubmitted(true);
     } catch {
-      // Never expose internal errors to user
       setFormError('Something went wrong. Please check your connection and try again.');
     } finally {
       setSending(false);
@@ -134,33 +131,16 @@ export default function App() {
   };
 
   const SearchBar = () => (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-      backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)',
-      padding: '14px 24px', display: 'flex', alignItems: 'center', gap: '12px',
-      borderBottom: '1px solid #e0e0e0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-    }}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input autoFocus type="text" value={searchText}
-        onChange={(e) => setSearchText(e.target.value)}
-        placeholder="Search rimviz.com"
-        style={{ flex: 1, border: 'none', outline: 'none', fontSize: '17px', background: 'transparent', color: '#333', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif' }}
-      />
-      <button onClick={() => { setSearchOpen(false); setSearchText(''); }}
-        style={{ background: 'none', border: 'none', fontSize: '15px', color: '#0071e3', cursor: 'pointer', fontFamily: 'inherit' }}>
-        Cancel
-      </button>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200, backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid #e0e0e0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input autoFocus type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="Search rimviz.com"
+        style={{ flex: 1, border: 'none', outline: 'none', fontSize: '17px', background: 'transparent', color: '#333', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif' }} />
+      <button onClick={() => { setSearchOpen(false); setSearchText(''); }} style={{ background: 'none', border: 'none', fontSize: '15px', color: '#0071e3', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
     </div>
   );
 
   const DropdownMenu = () => (
-    <div style={{
-      position: 'fixed', top: '52px', left: 0, right: 0, zIndex: 150,
-      backgroundColor: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)',
-      borderBottom: '1px solid #e0e0e0', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', padding: '8px 0 16px 0'
-    }}>
+    <div style={{ position: 'fixed', top: '52px', left: 0, right: 0, zIndex: 150, backgroundColor: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderBottom: '1px solid #e0e0e0', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', padding: '8px 0 16px 0' }}>
       {[
         { label: 'Home',             action: () => { setPage('home'); setMenuOpen(false); } },
         { label: 'Get Started',      action: handleStartNow },
@@ -170,13 +150,7 @@ export default function App() {
         { label: 'Support',          action: () => { setPage('home'); scrollTo('support'); } },
       ].map((item, i) => (
         <button key={i} onClick={item.action}
-          style={{
-            display: 'block', width: '100%', textAlign: 'left', padding: '13px 24px',
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: isMobile ? '15px' : '17px', color: '#1d1d1f',
-            fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
-            borderBottom: i < 5 ? '1px solid #f0f0f0' : 'none',
-          }}
+          style={{ display: 'block', width: '100%', textAlign: 'left', padding: '13px 24px', background: 'none', border: 'none', cursor: 'pointer', fontSize: isMobile ? '15px' : '17px', color: '#1d1d1f', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', borderBottom: i < 5 ? '1px solid #f0f0f0' : 'none' }}
           onMouseEnter={e => e.target.style.background = '#f5f5f7'}
           onMouseLeave={e => e.target.style.background = 'none'}>
           {item.label}
@@ -186,25 +160,14 @@ export default function App() {
   );
 
   const NavBar = () => (
-    <nav style={{
-      position: 'fixed', width: '100%', zIndex: 100, top: 0,
-      backgroundColor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(20px)',
-      borderBottom: '1px solid #d2d2d7', boxSizing: 'border-box'
-    }}>
+    <nav style={{ position: 'fixed', width: '100%', zIndex: 100, top: 0, backgroundColor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(20px)', borderBottom: '1px solid #d2d2d7', boxSizing: 'border-box' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div onClick={() => { setPage('home'); setMenuOpen(false); }}
-          style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: '300', color: '#1d1d1f', cursor: 'pointer', letterSpacing: '-0.5px' }}>
-          RimViz
-        </div>
+        <div onClick={() => { setPage('home'); setMenuOpen(false); }} style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: '300', color: '#1d1d1f', cursor: 'pointer', letterSpacing: '-0.5px' }}>RimViz</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <button onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
+          <button onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
-          <button onClick={() => { setMenuOpen(!menuOpen); setSearchOpen(false); }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <button onClick={() => { setMenuOpen(!menuOpen); setSearchOpen(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
             <span style={{ display: 'block', width: '18px', height: '1.5px', backgroundColor: '#1d1d1f', borderRadius: '2px' }}/>
             <span style={{ display: 'block', width: '18px', height: '1.5px', backgroundColor: '#1d1d1f', borderRadius: '2px' }}/>
           </button>
@@ -221,16 +184,9 @@ export default function App() {
         {menuOpen && <DropdownMenu />}
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '24px' }}>
           <p style={{ fontSize: isMobile ? '60px' : '80px', marginBottom: '24px' }}>🔧</p>
-          <h1 style={{ fontSize: isMobile ? '36px' : isTablet ? '48px' : '64px', fontWeight: '300', color: 'black', marginBottom: '16px', letterSpacing: '-2px' }}>
-            Coming <span style={{ fontWeight: '700' }}>Soon</span>
-          </h1>
-          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', maxWidth: '500px', lineHeight: 1.8, marginBottom: '40px' }}>
-            We are working hard on our 3D Visualization feature. Stay tuned!
-          </p>
-          <button onClick={() => setPage('home')}
-            style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'black', color: 'white', fontSize: '16px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
-            Go Back Home
-          </button>
+          <h1 style={{ fontSize: isMobile ? '36px' : isTablet ? '48px' : '64px', fontWeight: '300', color: 'black', marginBottom: '16px', letterSpacing: '-2px' }}>Coming <span style={{ fontWeight: '700' }}>Soon</span></h1>
+          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', maxWidth: '500px', lineHeight: 1.8, marginBottom: '40px' }}>We are working hard on our 3D Visualization feature. Stay tuned!</p>
+          <button onClick={() => setPage('home')} style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'black', color: 'white', fontSize: '16px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>Go Back Home</button>
         </div>
       </div>
     );
@@ -241,27 +197,18 @@ export default function App() {
       {searchOpen && <SearchBar />}
       <NavBar />
       {menuOpen && <DropdownMenu />}
-      {(menuOpen || searchOpen) && (
-        <div onClick={() => { setMenuOpen(false); setSearchOpen(false); }}
-          style={{ position: 'fixed', inset: 0, zIndex: 99, background: 'transparent' }} />
-      )}
+      {(menuOpen || searchOpen) && (<div onClick={() => { setMenuOpen(false); setSearchOpen(false); }} style={{ position: 'fixed', inset: 0, zIndex: 99, background: 'transparent' }} />)}
 
       {/* Hero */}
       <section style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
-        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=80" alt="Premium car"
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=80" alt="Premium car" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)' }} />
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: isMobile ? '0 20px' : '0 40px' }}>
           <h1 style={{ fontSize: heroFontSize, fontWeight: '300', color: 'white', marginBottom: '16px', lineHeight: 1.15, letterSpacing: isMobile ? '-0.5px' : '-2px' }}>
             Visualize Your<br /><span style={{ fontWeight: '700' }}>Perfect Rims</span>
           </h1>
-          <p style={{ fontSize: heroSubFontSize, color: 'rgba(255,255,255,0.85)', marginBottom: '36px', fontWeight: '300', maxWidth: '600px', lineHeight: 1.6 }}>
-            See how premium rims transform your vehicle before you buy.
-          </p>
-          <button onClick={handleStartNow}
-            style={{ padding: isMobile ? '12px 28px' : '14px 36px', borderRadius: '9999px', backgroundColor: 'white', color: 'black', fontSize: isMobile ? '15px' : '16px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
-            Start Now
-          </button>
+          <p style={{ fontSize: heroSubFontSize, color: 'rgba(255,255,255,0.85)', marginBottom: '36px', fontWeight: '300', maxWidth: '600px', lineHeight: 1.6 }}>See how premium rims transform your vehicle before you buy.</p>
+          <button onClick={handleStartNow} style={{ padding: isMobile ? '12px 28px' : '14px 36px', borderRadius: '9999px', backgroundColor: 'white', color: 'black', fontSize: isMobile ? '15px' : '16px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>Start Now</button>
         </div>
       </section>
 
@@ -274,9 +221,7 @@ export default function App() {
             {submitted ? (
               <div style={{ textAlign: 'center', padding: '40px 24px', backgroundColor: '#f0fdf4', borderRadius: '16px', border: '1px solid #bbf7d0' }}>
                 <p style={{ fontSize: '22px', color: '#16a34a', fontWeight: '600' }}>✅ Request Sent!</p>
-                <p style={{ color: '#6b7280', marginTop: '8px', fontSize: bodyFontSize }}>
-                  We received your request! We will contact you at <strong>{formData.email}</strong> shortly!
-                </p>
+                <p style={{ color: '#6b7280', marginTop: '8px', fontSize: bodyFontSize }}>We received your request! We will contact you at <strong>{formData.email}</strong> shortly!</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -287,23 +232,17 @@ export default function App() {
                 )}
                 <div>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Full Name *</label>
-                  <input type="text" placeholder="John Doe" value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    maxLength={100}
+                  <input type="text" placeholder="John Doe" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} maxLength={100}
                     style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Email Address *</label>
-                  <input type="email" placeholder="you@example.com" value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    maxLength={200}
+                  <input type="email" placeholder="you@example.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} maxLength={200}
                     style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Phone Number (Optional)</label>
-                  <input type="tel" placeholder="+27 123 456 789" value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    maxLength={20}
+                  <input type="tel" placeholder="+27 123 456 789" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} maxLength={20}
                     style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div>
@@ -311,22 +250,18 @@ export default function App() {
                   <select value={formData.rimInch} onChange={(e) => setFormData({ ...formData, rimInch: e.target.value })}
                     style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }}>
                     <option value="">Select rim size</option>
-                    {['17','18','19','20','21','22','23'].map(s => (
-                      <option key={s} value={s}>{s} inches</option>
-                    ))}
+                    {['17','18','19','20','21','22','23'].map(s => <option key={s} value={s}>{s} inches</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Rim Image *</label>
-                  <input type="file" accept="image/jpeg,image/png,image/jpg"
-                    onChange={(e) => setRimImage(e.target.files[0])}
+                  <input type="file" accept="image/jpeg,image/png,image/jpg" onChange={(e) => setRimImage(e.target.files[0])}
                     style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', boxSizing: 'border-box' }} />
                   {rimImage && <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '4px' }}>✅ {rimImage.name}</p>}
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Your Car Image *</label>
-                  <input type="file" accept="image/jpeg,image/png,image/jpg"
-                    onChange={(e) => setVehicleImage(e.target.files[0])}
+                  <input type="file" accept="image/jpeg,image/png,image/jpg" onChange={(e) => setVehicleImage(e.target.files[0])}
                     style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', boxSizing: 'border-box' }} />
                   {vehicleImage && <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '4px' }}>✅ {vehicleImage.name}</p>}
                 </div>
@@ -356,8 +291,7 @@ export default function App() {
               { src: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=600&q=80', alt: 'Chrome rims' },
               { src: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80', alt: 'Performance wheels' },
             ].map((img, i) => (
-              <img key={i} src={img.src} alt={img.alt}
-                style={{ width: '100%', height: galleryImageHeight, objectFit: 'cover', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', display: 'block' }} />
+              <img key={i} src={img.src} alt={img.alt} style={{ width: '100%', height: galleryImageHeight, objectFit: 'cover', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', display: 'block' }} />
             ))}
           </div>
         </div>
@@ -367,9 +301,7 @@ export default function App() {
       <section id="about" style={{ padding: sectionPadding, backgroundColor: 'white' }}>
         <div style={{ maxWidth: '768px', margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '24px' }}>About RimViz</h2>
-          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>
-            At RimViz, we take the guesswork out of buying rims. Simply upload a photo of your vehicle and the rims you love, and our team will create a professional visualization showing exactly how they'll look on your car — before you spend a single cent.
-          </p>
+          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>At RimViz, we take the guesswork out of buying rims. Simply upload a photo of your vehicle and the rims you love, and our team will create a professional visualization showing exactly how they'll look on your car — before you spend a single cent.</p>
         </div>
       </section>
 
@@ -377,9 +309,7 @@ export default function App() {
       <section id="support" style={{ padding: sectionPadding, backgroundColor: '#f9fafb' }}>
         <div style={{ maxWidth: '768px', margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '24px' }}>Support</h2>
-          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>
-            Have questions? We are here to help you every step of the way.
-          </p>
+          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>Have questions? We are here to help you every step of the way.</p>
         </div>
       </section>
 
