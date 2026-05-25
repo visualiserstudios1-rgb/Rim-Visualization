@@ -44,7 +44,7 @@ function validateInputs({ name, email, phone, rimSize, rimImageUrl, vehicleImage
   return errors;
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Security headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -73,11 +73,11 @@ export default async function handler(req, res) {
   }
 
   // Sanitize inputs
-  const name           = sanitize(req.body?.name);
-  const email          = sanitize(req.body?.email);
-  const phone          = sanitize(req.body?.phone);
-  const rimSize        = sanitize(req.body?.rimSize);
-  const rimImageUrl    = sanitize(req.body?.rimImageUrl);
+  const name            = sanitize(req.body?.name);
+  const email           = sanitize(req.body?.email);
+  const phone           = sanitize(req.body?.phone);
+  const rimSize         = sanitize(req.body?.rimSize);
+  const rimImageUrl     = sanitize(req.body?.rimImageUrl);
   const vehicleImageUrl = sanitize(req.body?.vehicleImageUrl);
 
   // Validate
@@ -115,4 +115,4 @@ export default async function handler(req, res) {
   }
 
   return res.status(200).json({ success: true });
-}
+};
