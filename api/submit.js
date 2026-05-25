@@ -84,7 +84,7 @@ module.exports = async function handler(req, res) {
   const errors = validateInputs({ name, email, phone, rimSize, rimImageUrl, vehicleImageUrl });
   if (errors.length > 0) return res.status(400).json({ error: errors.join(' ') });
 
-  // Send email via EmailJS
+ // Send email via EmailJS
   try {
     const emailRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method: 'POST',
@@ -106,13 +106,16 @@ module.exports = async function handler(req, res) {
       }),
     });
 
+    const emailBody = await emailRes.text();
+    console.log('EmailJS status:', emailRes.status);
+    console.log('EmailJS response:', emailBody);
+
     if (!emailRes.ok) {
-      const errText = await emailRes.text();
-      throw new Error(errText);
+      throw new Error(emailBody);
     }
   } catch (err) {
+    console.error('EmailJS error:', err.message);
     return res.status(500).json({ error: 'Failed to send notification. Please try again.' });
   }
 
-  return res.status(200).json({ success: true });
-};
+  return res.status(200).json({ success: true });;
