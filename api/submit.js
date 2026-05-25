@@ -1,6 +1,4 @@
 // /api/submit.js — Vercel Serverless Function
-// Images are uploaded directly to Cloudinary from browser
-// This endpoint only handles email sending
 
 const rateLimit = new Map();
 const RATE_LIMIT_MAX = 5;
@@ -45,13 +43,11 @@ function validateInputs({ name, email, phone, rimSize, rimImageUrl, vehicleImage
 }
 
 module.exports = async function handler(req, res) {
-  // Security headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-  // CORS
   const allowedOrigins = [
     'https://rim-visualization.vercel.app',
     'http://localhost:3000',
@@ -66,13 +62,11 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
 
-  // Rate limiting
   const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
   if (isRateLimited(ip)) {
     return res.status(429).json({ error: 'Too many requests. Please try again later.' });
   }
 
-  // Sanitize inputs
   const name            = sanitize(req.body?.name);
   const email           = sanitize(req.body?.email);
   const phone           = sanitize(req.body?.phone);
@@ -80,11 +74,9 @@ module.exports = async function handler(req, res) {
   const rimImageUrl     = sanitize(req.body?.rimImageUrl);
   const vehicleImageUrl = sanitize(req.body?.vehicleImageUrl);
 
-  // Validate
   const errors = validateInputs({ name, email, phone, rimSize, rimImageUrl, vehicleImageUrl });
   if (errors.length > 0) return res.status(400).json({ error: errors.join(' ') });
 
- // Send email via EmailJS
   try {
     const emailRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method: 'POST',
@@ -118,4 +110,5 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to send notification. Please try again.' });
   }
 
-  return res.status(200).json({ success: true });;
+  return res.status(200).json({ success: true });
+};
