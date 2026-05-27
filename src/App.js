@@ -321,9 +321,9 @@ export default function App() {
           <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginTop: '16px' }}>Simple process. Professional results. Complete clarity.</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginTop: '48px', flexWrap: 'wrap' }}>
             {[
-              { value: '24h', label: 'Turnaround Time' },
-              { value: '100%', label: 'Satisfaction Focus' },
-              { value: 'ZA', label: 'Nationwide Service' },
+              { value: '12h', label: 'Turnaround Time' },
+              { value: '99.9%', label: 'Satisfaction Focus' },
+              { value: 'SA', label: 'Nationwide Service' },
             ].map((stat, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: '36px', fontWeight: '700', color: 'black', margin: 0 }}>{stat.value}</p>
@@ -366,7 +366,7 @@ export default function App() {
       {/* Footer */}
       <footer style={{ backgroundColor: 'black', color: 'white', padding: isMobile ? '32px 16px' : '48px 24px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2025 RimViz. All rights reserved.</p>
+          <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2026 RimViz. All rights reserved.</p>
         </div>
       </footer>
     </div>
