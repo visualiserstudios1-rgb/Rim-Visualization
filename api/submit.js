@@ -99,14 +99,12 @@ module.exports = async function handler(req, res) {
     });
 
     const emailBody = await emailRes.text();
-    console.log('EmailJS status:', emailRes.status);
-    console.log('EmailJS response:', emailBody);
 
     if (!emailRes.ok) {
       throw new Error(emailBody);
     }
   } catch (err) {
-    console.error('EmailJS error:', err.message);
+    
     return res.status(500).json({ error: 'Failed to send notification. Please try again.' });
   }
 
