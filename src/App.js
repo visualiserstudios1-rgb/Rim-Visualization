@@ -315,12 +315,22 @@ if (vehicleImage && vehicleImage.size > 35 * 1024 * 1024) {
         </div>
       </section>
 
-      {/* About */}
-      <section id="about" style={{ padding: sectionPadding, backgroundColor: 'white' }}>
-        <div style={{ maxWidth: '768px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '24px' }}>About RimViz</h2>
-          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>At RimViz, we take the guesswork out of buying rims. Simply upload a photo of your vehicle and the rims you love, and our team will create a professional visualization showing exactly how they'll look on your car — before you spend a single cent.</p>
-        </div>
+      <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>RimViz is a South African visualisation company pioneering a new standard in automotive customisation. We give drivers the power to see their dream rims on their vehicle before committing to a purchase — eliminating guesswork and inspiring confidence.</p>
+<p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginTop: '16px' }}>Simple process. Professional results. Complete clarity.</p>
+
+{/* Stats */}
+<div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginTop: '48px', flexWrap: 'wrap' }}>
+  {[
+    { value: '24h', label: 'Turnaround Time' },
+    { value: '100%', label: 'Satisfaction Focus' },
+    { value: 'ZA', label: 'Nationwide Service' },
+  ].map((stat, i) => (
+    <div key={i} style={{ textAlign: 'center' }}>
+      <p style={{ fontSize: '36px', fontWeight: '700', color: 'black', margin: 0 }}>{stat.value}</p>
+      <p style={{ fontSize: '14px', color: '#6b7280', fontWeight: '400', marginTop: '4px' }}>{stat.label}</p>
+    </div>
+  ))}
+</div>
       </section>
 
       {/* Support */}
