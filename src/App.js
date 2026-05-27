@@ -343,7 +343,6 @@ export default function App() {
             { q: 'How does RimViz work?', a: 'Simply fill in your details, upload a photo of your rim and your vehicle, and submit. Our team will create a professional visualisation showing exactly how your chosen rims will look on your car.' },
             { q: 'How long does a visualisation take?', a: 'Most visualisations are delivered within 24 to 48 hours. We will contact you directly at the email address you provided.' },
             { q: 'What image formats are accepted?', a: 'We accept JPG and PNG images only. Make sure your photos are clear and well lit for the best results.' },
-            { q: 'What rim sizes do you support?', a: 'We currently support rim sizes from 17 to 23 inches.' },
             { q: 'Is there a cost for the visualisation?', a: 'Contact us directly for pricing information. We will get back to you as soon as possible.' },
             { q: 'How do I contact RimViz?', a: 'You can reach us at visualiserstudios1@gmail.com. We typically respond within 24 hours.' },
           ].map((item, i) => (
@@ -365,7 +364,7 @@ export default function App() {
 
       {/* Footer */}
       <footer style={{ backgroundColor: 'black', color: 'white', padding: isMobile ? '32px 16px' : '48px 24px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}> so
           <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2026 RimViz. All rights reserved.</p>
         </div>
       </footer>
