@@ -87,7 +87,17 @@ export default function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
-// File size validation
+// File size and type validation
+const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+
+if (rimImage && !allowedTypes.includes(rimImage.type)) {
+  setFormError('Rim image must be a JPG or PNG file.');
+  return;
+}
+if (vehicleImage && !allowedTypes.includes(vehicleImage.type)) {
+  setFormError('Car image must be a JPG or PNG file.');
+  return;
+}
 if (rimImage && rimImage.size > 35 * 1024 * 1024) {
   setFormError('Rim image must be under 35MB.');
   return;
