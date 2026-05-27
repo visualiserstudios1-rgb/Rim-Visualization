@@ -29,8 +29,8 @@ function validateInputs({ name, email, phone, rimSize, rimImageUrl, vehicleImage
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!email || !emailRegex.test(email))
     errors.push('A valid email address is required.');
-  if (phone && phone.length > 20)
-    errors.push('Phone number is too long.');
+  if (phone && !/^\+?[\d\s\-().]{7,20}$/.test(phone))
+    errors.push('Please enter a valid phone number.');
   const validSizes = ['17', '18', '19', '20', '21', '22', '23'];
   if (!rimSize || !validSizes.includes(rimSize))
     errors.push('Please select a valid rim size.');
