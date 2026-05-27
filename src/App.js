@@ -87,7 +87,15 @@ export default function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
-
+// File size validation
+if (rimImage && rimImage.size > 35 * 1024 * 1024) {
+  setFormError('Rim image must be under 35MB.');
+  return;
+}
+if (vehicleImage && vehicleImage.size > 35 * 1024 * 1024) {
+  setFormError('Car image must be under 35MB.');
+  return;
+}
     const validationError = validateForm({ ...formData, rimImage, vehicleImage });
     if (validationError) { setFormError(validationError); return; }
 
