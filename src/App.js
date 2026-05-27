@@ -339,12 +339,33 @@ if (vehicleImage && vehicleImage.size > 35 * 1024 * 1024) {
           <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '24px' }}>Support</h2>
           <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>Have questions? We are here to help you every step of the way.</p>
         </div>
+        {/* FAQ */}
+{[
+  { q: 'How does RimViz work?', a: 'Simply fill in your details, upload a photo of your rim and your vehicle, and submit. Our team will create a professional visualization showing exactly how your chosen rims will look on your car.' },
+  { q: 'How long does a visualization take?', a: 'Most visualizations are delivered within 24 to 48 hours. We will contact you directly at the email address you provided.' },
+  { q: 'What image formats are accepted?', a: 'We accept JPG and PNG images only. Make sure your photos are clear and well lit for the best results.' },
+  { q: 'What rim sizes do you support?', a: 'We currently support rim sizes from 17 to 23 inches.' },
+  { q: 'Is there a cost for the visualization?', a: 'Contact us directly for pricing information. We will get back to you as soon as possible.' },
+  { q: 'How do I contact RimViz?', a: 'You can reach us at visualiserstudios1@gmail.com. We typically respond within 24 hours.' },
+].map((item, i) => (
+  <div key={i} style={{ marginBottom: '24px', textAlign: 'left', backgroundColor: '#f9fafb', borderRadius: '12px', padding: '20px 24px', borderLeft: '4px solid black' }}>
+    <p style={{ fontSize: bodyFontSize, fontWeight: '600', color: '#1d1d1f', marginBottom: '8px' }}>{item.q}</p>
+    <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, margin: 0 }}>{item.a}</p>
+  </div>
+))}
+
+{/* Contact */}
+<div style={{ marginTop: '40px', backgroundColor: 'black', borderRadius: '16px', padding: '32px', textAlign: 'center' }}>
+  <p style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', marginBottom: '8px' }}>Still have questions?</p>
+  <p style={{ color: '#9ca3af', fontSize: bodyFontSize, fontWeight: '300', marginBottom: '16px' }}>We would love to hear from you.</p>
+  <a href="mailto:visualiserstudios1@gmail.com" style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', textDecoration: 'none', backgroundColor: '#1d1d1f', padding: '12px 28px', borderRadius: '9999px', border: '1px solid #ffffff33' }}>visualiserstudios1@gmail.com</a>
+</div>
       </section>
 
       {/* Footer */}
       <footer style={{ backgroundColor: 'black', color: 'white', padding: isMobile ? '32px 16px' : '48px 24px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>© 2024 RimViz. All rights reserved.</p>
+          <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2024 RimViz. All rights reserved.</p>
         </div>
       </footer>
     </div>
