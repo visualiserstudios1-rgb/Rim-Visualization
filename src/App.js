@@ -364,7 +364,7 @@ export default function App() {
 
       {/* Footer */}
       <footer style={{ backgroundColor: 'black', color: 'white', padding: isMobile ? '32px 16px' : '48px 24px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}> so
+        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}> South Africa
           <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2026 RimViz. All rights reserved.</p>
         </div>
       </footer>
