@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 const CLOUDINARY_CLOUD_NAME   = 'dfyjxhjce';
 const CLOUDINARY_UPLOAD_PRESET = 'rimviz_uploads';
 
-async function uploadToCloudinary(file, onProgress) {
+async function uploadToCloudinary(file) {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
@@ -87,38 +87,36 @@ export default function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
-// File size and type validation
-const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
 
-if (rimImage && !allowedTypes.includes(rimImage.type)) {
-  setFormError('Rim image must be a JPG or PNG file.');
-  return;
-}
-if (vehicleImage && !allowedTypes.includes(vehicleImage.type)) {
-  setFormError('Car image must be a JPG or PNG file.');
-  return;
-}
-if (rimImage && rimImage.size > 35 * 1024 * 1024) {
-  setFormError('Rim image must be under 35MB.');
-  return;
-}
-if (vehicleImage && vehicleImage.size > 35 * 1024 * 1024) {
-  setFormError('Car image must be under 35MB.');
-  return;
-}
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (rimImage && !allowedTypes.includes(rimImage.type)) {
+      setFormError('Rim image must be a JPG or PNG file.');
+      return;
+    }
+    if (vehicleImage && !allowedTypes.includes(vehicleImage.type)) {
+      setFormError('Car image must be a JPG or PNG file.');
+      return;
+    }
+    if (rimImage && rimImage.size > 35 * 1024 * 1024) {
+      setFormError('Rim image must be under 35MB.');
+      return;
+    }
+    if (vehicleImage && vehicleImage.size > 35 * 1024 * 1024) {
+      setFormError('Car image must be under 35MB.');
+      return;
+    }
+
     const validationError = validateForm({ ...formData, rimImage, vehicleImage });
     if (validationError) { setFormError(validationError); return; }
 
     setSending(true);
     try {
-      // Upload images directly to Cloudinary from browser
       setUploadStatus('Uploading rim image...');
       const rimImageUrl = await uploadToCloudinary(rimImage);
 
       setUploadStatus('Uploading car image...');
       const vehicleImageUrl = await uploadToCloudinary(vehicleImage);
 
-      // Send only the URLs + form data to our secure backend
       setUploadStatus('Sending request...');
       const response = await fetch('/api/submit', {
         method: 'POST',
@@ -315,57 +313,60 @@ if (vehicleImage && vehicleImage.size > 35 * 1024 * 1024) {
         </div>
       </section>
 
-      <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>RimViz is a South African visualisation company pioneering a new standard in automotive customisation. We give drivers the power to see their dream rims on their vehicle before committing to a purchase — eliminating guesswork and inspiring confidence.</p>
-<p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginTop: '16px' }}>Simple process. Professional results. Complete clarity.</p>
-
-{/* Stats */}
-<div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginTop: '48px', flexWrap: 'wrap' }}>
-  {[
-    { value: '24h', label: 'Turnaround Time' },
-    { value: '100%', label: 'Satisfaction Focus' },
-    { value: 'ZA', label: 'Nationwide Service' },
-  ].map((stat, i) => (
-    <div key={i} style={{ textAlign: 'center' }}>
-      <p style={{ fontSize: '36px', fontWeight: '700', color: 'black', margin: 0 }}>{stat.value}</p>
-      <p style={{ fontSize: '14px', color: '#6b7280', fontWeight: '400', marginTop: '4px' }}>{stat.label}</p>
-    </div>
-  ))}
-</div>
+      {/* About */}
+      <section id="about" style={{ padding: sectionPadding, backgroundColor: 'white' }}>
+        <div style={{ maxWidth: '768px', margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '24px' }}>About RimViz</h2>
+          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>RimViz is a South African visualisation company pioneering a new standard in automotive customisation. We give drivers the power to see their dream rims on their vehicle before committing to a purchase — eliminating guesswork and inspiring confidence.</p>
+          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginTop: '16px' }}>Simple process. Professional results. Complete clarity.</p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginTop: '48px', flexWrap: 'wrap' }}>
+            {[
+              { value: '24h', label: 'Turnaround Time' },
+              { value: '100%', label: 'Satisfaction Focus' },
+              { value: 'ZA', label: 'Nationwide Service' },
+            ].map((stat, i) => (
+              <div key={i} style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: '36px', fontWeight: '700', color: 'black', margin: 0 }}>{stat.value}</p>
+                <p style={{ fontSize: '14px', color: '#6b7280', fontWeight: '400', marginTop: '4px' }}>{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Support */}
       <section id="support" style={{ padding: sectionPadding, backgroundColor: '#f9fafb' }}>
         <div style={{ maxWidth: '768px', margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '24px' }}>Support</h2>
-          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>Have questions? We are here to help you every step of the way.</p>
+          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginBottom: '40px' }}>Have questions? We are here to help you every step of the way.</p>
+          {[
+            { q: 'How does RimViz work?', a: 'Simply fill in your details, upload a photo of your rim and your vehicle, and submit. Our team will create a professional visualisation showing exactly how your chosen rims will look on your car.' },
+            { q: 'How long does a visualisation take?', a: 'Most visualisations are delivered within 24 to 48 hours. We will contact you directly at the email address you provided.' },
+            { q: 'What image formats are accepted?', a: 'We accept JPG and PNG images only. Make sure your photos are clear and well lit for the best results.' },
+            { q: 'What rim sizes do you support?', a: 'We currently support rim sizes from 17 to 23 inches.' },
+            { q: 'Is there a cost for the visualisation?', a: 'Contact us directly for pricing information. We will get back to you as soon as possible.' },
+            { q: 'How do I contact RimViz?', a: 'You can reach us at visualiserstudios1@gmail.com. We typically respond within 24 hours.' },
+          ].map((item, i) => (
+            <div key={i} style={{ marginBottom: '12px', textAlign: 'left', backgroundColor: 'white', borderRadius: '12px', padding: '24px 28px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #f0f0f0' }}>
+              <p style={{ fontSize: bodyFontSize, fontWeight: '600', color: '#1d1d1f', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ backgroundColor: 'black', color: 'white', borderRadius: '50%', width: '24px', height: '24px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700', flexShrink: 0 }}>{i + 1}</span>
+                {item.q}
+              </p>
+              <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, margin: 0, paddingLeft: '34px' }}>{item.a}</p>
+            </div>
+          ))}
+          <div style={{ marginTop: '40px', backgroundColor: 'black', borderRadius: '16px', padding: '32px', textAlign: 'center' }}>
+            <p style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', marginBottom: '8px' }}>Still have questions?</p>
+            <p style={{ color: '#9ca3af', fontSize: bodyFontSize, fontWeight: '300', marginBottom: '16px' }}>We would love to hear from you.</p>
+            <a href="mailto:visualiserstudios1@gmail.com" style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', textDecoration: 'none', backgroundColor: '#1d1d1f', padding: '12px 28px', borderRadius: '9999px', border: '1px solid #ffffff33' }}>visualiserstudios1@gmail.com</a>
+          </div>
         </div>
-        {/* FAQ */}
-{[
-  { q: 'How does RimViz work?', a: 'Simply fill in your details, upload a photo of your rim and your vehicle, and submit. Our team will create a professional visualization showing exactly how your chosen rims will look on your car.' },
-  { q: 'How long does a visualization take?', a: 'Most visualizations are delivered within 24 to 48 hours. We will contact you directly at the email address you provided.' },
-  { q: 'What image formats are accepted?', a: 'We accept JPG and PNG images only. Make sure your photos are clear and well lit for the best results.' },
-  { q: 'What rim sizes do you support?', a: 'We currently support rim sizes from 17 to 23 inches.' },
-  { q: 'Is there a cost for the visualization?', a: 'Contact us directly for pricing information. We will get back to you as soon as possible.' },
-  { q: 'How do I contact RimViz?', a: 'You can reach us at visualiserstudios1@gmail.com. We typically respond within 24 hours.' },
-].map((item, i) => (
-  <div key={i} style={{ marginBottom: '24px', textAlign: 'left', backgroundColor: '#f9fafb', borderRadius: '12px', padding: '20px 24px', borderLeft: '4px solid black' }}>
-    <p style={{ fontSize: bodyFontSize, fontWeight: '600', color: '#1d1d1f', marginBottom: '8px' }}>{item.q}</p>
-    <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, margin: 0 }}>{item.a}</p>
-  </div>
-))}
-
-{/* Contact */}
-<div style={{ marginTop: '40px', backgroundColor: 'black', borderRadius: '16px', padding: '32px', textAlign: 'center' }}>
-  <p style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', marginBottom: '8px' }}>Still have questions?</p>
-  <p style={{ color: '#9ca3af', fontSize: bodyFontSize, fontWeight: '300', marginBottom: '16px' }}>We would love to hear from you.</p>
-  <a href="mailto:visualiserstudios1@gmail.com" style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', textDecoration: 'none', backgroundColor: '#1d1d1f', padding: '12px 28px', borderRadius: '9999px', border: '1px solid #ffffff33' }}>visualiserstudios1@gmail.com</a>
-</div>
       </section>
 
       {/* Footer */}
       <footer style={{ backgroundColor: 'black', color: 'white', padding: isMobile ? '32px 16px' : '48px 24px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2024 RimViz. All rights reserved.</p>
+          <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2025 RimViz. All rights reserved.</p>
         </div>
       </footer>
     </div>
