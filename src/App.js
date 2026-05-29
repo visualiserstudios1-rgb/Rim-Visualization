@@ -1,6 +1,28 @@
-// App.js — Images sent to backend which uploads to Cloudinary securely
+// App.js — Images upload directly to Cloudinary from browser
 
 import { useState, useEffect } from 'react';
+
+const CLOUDINARY_CLOUD_NAME   = 'dfyjxhjce';
+const CLOUDINARY_UPLOAD_PRESET = 'rimviz_uploads';
+
+async function uploadToCloudinary(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    { method: 'POST', body: formData }
+  );
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || 'Upload failed');
+  }
+
+  const data = await res.json();
+  return data.secure_url;
+}
 
 function useScreenSize() {
   const [width, setWidth] = useState(window.innerWidth);
@@ -87,30 +109,23 @@ export default function App() {
 
     setSending(true);
     try {
-      // Convert images to base64
-      setUploadStatus('Preparing images...');
-      const toBase64 = (file) => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-      });
+      setUploadStatus('Uploading rim image...');
+      const rimImageUrl = await uploadToCloudinary(rimImage);
 
-      const rimImageBase64     = await toBase64(rimImage);
-      const vehicleImageBase64 = await toBase64(vehicleImage);
+      setUploadStatus('Uploading car image...');
+      const vehicleImageUrl = await uploadToCloudinary(vehicleImage);
 
-      // Send everything to backend
       setUploadStatus('Sending request...');
       const response = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name:                formData.name.trim(),
-          email:               formData.email.trim(),
-          phone:               formData.phone.trim(),
-          rimSize:             formData.rimInch,
-          rimImageBase64,
-          vehicleImageBase64,
+          name:         formData.name.trim(),
+          email:        formData.email.trim(),
+          phone:        formData.phone.trim(),
+          rimSize:      formData.rimInch,
+          rimImageUrl,
+          vehicleImageUrl,
         }),
       });
 
@@ -304,9 +319,9 @@ export default function App() {
           <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginTop: '16px' }}>Simple process. Professional results. Complete clarity.</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginTop: '48px', flexWrap: 'wrap' }}>
             {[
-              { value: '2h', label: 'Turnaround Time' },
-              { value: '99.9%', label: 'Satisfaction Focus' },
-              { value: 'SA', label: 'Nationwide Service' },
+              { value: '24h', label: 'Turnaround Time' },
+              { value: '100%', label: 'Satisfaction Focus' },
+              { value: 'ZA', label: 'Nationwide Service' },
             ].map((stat, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: '36px', fontWeight: '700', color: 'black', margin: 0 }}>{stat.value}</p>
@@ -348,8 +363,8 @@ export default function App() {
 
       {/* Footer */}
       <footer style={{ backgroundColor: 'black', color: 'white', padding: isMobile ? '32px 16px' : '48px 24px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>South Africa
-          <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2025 RimViz. All rights reserved.</p>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>© 2025 RimViz. All rights reserved.</p>
         </div>
       </footer>
     </div>
