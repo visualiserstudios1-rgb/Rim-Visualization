@@ -281,12 +281,12 @@ export default function App() {
                 </div>
                 {sending && uploadStatus && (
                   <div style={{ textAlign: 'center', padding: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-                    <p style={{ color: '#0284c7', fontSize: '14px', margin: 0 }}>⏳ {uploadStatus}</p>
+                    <p style={{ color: '#0284c7', fontSize: '14px', margin: 0 }}> {uploadStatus}</p>
                   </div>
                 )}
                 <button type="submit" disabled={sending}
                   style={{ width: '100%', padding: '16px', borderRadius: '9999px', backgroundColor: sending ? '#666' : 'black', color: 'white', fontSize: '16px', fontWeight: '600', border: 'none', cursor: sending ? 'not-allowed' : 'pointer' }}>
-                  {sending ? '⏳ Processing...' : 'Submit for Visualization'}
+                 {sending ? 'Processing...' : 'Pay R49.99 & Submit'}
                 </button>
               </form>
             )}
