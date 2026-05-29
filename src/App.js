@@ -612,7 +612,7 @@ export default function App() {
           <div style={{ display: 'grid', gridTemplateColumns: galleryColumns, gap: galleryGap }}>
             {[
               { src: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80', alt: 'Black rims' },
-              { src: 'https://images.unsplash.com/photo-1555353540-64580b51c258?w=600&q=80', alt: 'Silver rims' },
+              { src: 'https://i.imgur.com/f2jT8fm.png', alt: 'Silver rims' },
               { src: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=600&q=80', alt: 'Chrome rims' },
               { src: 'https://i.imgur.com/uqinPfy.png', alt: 'Performance wheels' },
             ].map((img, i) => (
