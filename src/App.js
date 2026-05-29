@@ -109,23 +109,27 @@ export default function App() {
 
     setSending(true);
     try {
+      // Upload images to Cloudinary first
       setUploadStatus('Uploading rim image...');
       const rimImageUrl = await uploadToCloudinary(rimImage);
 
       setUploadStatus('Uploading car image...');
       const vehicleImageUrl = await uploadToCloudinary(vehicleImage);
 
-      setUploadStatus('Sending request...');
-      const response = await fetch('/api/submit', {
+      // Store image URLs in sessionStorage
+      sessionStorage.setItem('rimviz_rim_url', rimImageUrl);
+      sessionStorage.setItem('rimviz_vehicle_url', vehicleImageUrl);
+
+      // Get PayFast payment data from backend
+      setUploadStatus('Preparing payment...');
+      const response = await fetch('/api/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name:         formData.name.trim(),
-          email:        formData.email.trim(),
-          phone:        formData.phone.trim(),
-          rimSize:      formData.rimInch,
-          rimImageUrl,
-          vehicleImageUrl,
+          name:    formData.name.trim(),
+          email:   formData.email.trim(),
+          phone:   formData.phone.trim(),
+          rimSize: formData.rimInch,
         }),
       });
 
@@ -135,7 +139,22 @@ export default function App() {
         return;
       }
 
-      setSubmitted(true);
+      // Build PayFast form and submit
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = result.payfastUrl;
+
+      Object.entries(result.payfastData).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = key;
+        input.value = value;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+
     } catch {
       setFormError('Something went wrong. Please check your connection and try again.');
     } finally {
@@ -281,12 +300,17 @@ export default function App() {
                 </div>
                 {sending && uploadStatus && (
                   <div style={{ textAlign: 'center', padding: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-                    <p style={{ color: '#0284c7', fontSize: '14px', margin: 0 }}> {uploadStatus}</p>
+                    <p style={{ color: '#0284c7', fontSize: '14px', margin: 0 }}>⏳ {uploadStatus}</p>
                   </div>
                 )}
+                <div style={{ backgroundColor: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb', textAlign: 'center' }}>
+                  <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 4px 0' }}>Total amount due</p>
+                  <p style={{ fontSize: '28px', fontWeight: '700', color: 'black', margin: 0 }}>R49.99</p>
+                  <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>Secure payment via PayFast — Card & EFT accepted</p>
+                </div>
                 <button type="submit" disabled={sending}
                   style={{ width: '100%', padding: '16px', borderRadius: '9999px', backgroundColor: sending ? '#666' : 'black', color: 'white', fontSize: '16px', fontWeight: '600', border: 'none', cursor: sending ? 'not-allowed' : 'pointer' }}>
-                 {sending ? 'Processing...' : 'Pay R49.99 & Submit'}
+                  {sending ? '⏳ Processing...' : '🔒 Pay R49.99 & Submit'}
                 </button>
               </form>
             )}
@@ -342,7 +366,7 @@ export default function App() {
             { q: 'How long does a visualisation take?', a: 'Most visualisations are delivered within 24 to 48 hours. We will contact you directly at the email address you provided.' },
             { q: 'What image formats are accepted?', a: 'We accept JPG and PNG images only. Make sure your photos are clear and well lit for the best results.' },
             { q: 'What rim sizes do you support?', a: 'We currently support rim sizes from 17 to 23 inches.' },
-            { q: 'Is there a cost for the visualisation?', a: 'Contact us directly for pricing information. We will get back to you as soon as possible.' },
+            { q: 'Is there a cost for the visualisation?', a: 'Our visualisation service is priced at R49.99 per request.' },
             { q: 'How do I contact RimViz?', a: 'You can reach us at visualiserstudios1@gmail.com. We typically respond within 24 hours.' },
           ].map((item, i) => (
             <div key={i} style={{ marginBottom: '12px', textAlign: 'left', backgroundColor: 'white', borderRadius: '12px', padding: '24px 28px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #f0f0f0' }}>
