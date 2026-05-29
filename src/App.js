@@ -162,14 +162,57 @@ export default function App() {
     }
   };
 
-  const SearchBar = () => (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200, backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid #e0e0e0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input autoFocus type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="Search rimviz.com"
-        style={{ flex: 1, border: 'none', outline: 'none', fontSize: '17px', background: 'transparent', color: '#333', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif' }} />
-      <button onClick={() => { setSearchOpen(false); setSearchText(''); }} style={{ background: 'none', border: 'none', fontSize: '15px', color: '#0071e3', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
-    </div>
-  );
+  const searchTargets = [
+    { keywords: ['home', 'start', 'hero', 'top'], label: 'Home', action: () => { setPage('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); } },
+    { keywords: ['get started', 'order', 'submit', 'upload', 'form', 'buy', 'pay', 'payment', 'visuali', 'rim size', 'request'], label: 'Get Started', action: () => { setPage('home'); handleStartNow(); } },
+    { keywords: ['3d', 'three', 'coming soon', '3d visual'], label: '3D Visualization', action: () => { setPage('3d'); setMenuOpen(false); } },
+    { keywords: ['gallery', 'showcase', 'photos', 'images', 'examples', 'cars', 'wheels'], label: 'Gallery', action: () => { setPage('home'); setTimeout(() => scrollTo('gallery'), 100); } },
+    { keywords: ['about', 'rimviz', 'who', 'company', 'south african', 'turnaround', '24h', 'nationwide'], label: 'About', action: () => { setPage('home'); setTimeout(() => scrollTo('about'), 100); } },
+    { keywords: ['support', 'help', 'faq', 'question', 'contact', 'email', 'how', 'format', 'jpg', 'png', 'price', 'cost', 'r49', '49.99', 'hours', 'delivery', 'work'], label: 'Support', action: () => { setPage('home'); setTimeout(() => scrollTo('support'), 100); } },
+  ];
+
+  const getSearchResults = (text) => {
+    if (!text.trim()) return [];
+    const lower = text.toLowerCase();
+    return searchTargets.filter(t => t.keywords.some(k => k.includes(lower) || lower.includes(k)));
+  };
+
+  const handleSearchSelect = (target) => {
+    target.action();
+    setSearchOpen(false);
+    setSearchText('');
+  };
+
+  const SearchBar = () => {
+    const results = getSearchResults(searchText);
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200 }}>
+        <div style={{ backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid #e0e0e0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input autoFocus type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && results.length > 0) handleSearchSelect(results[0]); if (e.key === 'Escape') { setSearchOpen(false); setSearchText(''); } }}
+            placeholder="Search rimviz.com"
+            style={{ flex: 1, border: 'none', outline: 'none', fontSize: '17px', background: 'transparent', color: '#333', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif' }} />
+          <button onClick={() => { setSearchOpen(false); setSearchText(''); }} style={{ background: 'none', border: 'none', fontSize: '15px', color: '#0071e3', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+        </div>
+        {searchText.trim() && (
+          <div style={{ backgroundColor: 'white', borderBottom: '1px solid #e0e0e0', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }}>
+            {results.length > 0 ? results.map((r, i) => (
+              <button key={i} onClick={() => handleSearchSelect(r)}
+                style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', textAlign: 'left', padding: '14px 24px', background: 'none', border: 'none', borderBottom: i < results.length - 1 ? '1px solid #f0f0f0' : 'none', cursor: 'pointer', fontSize: '16px', color: '#1d1d1f', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#f5f5f7'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                {r.label}
+              </button>
+            )) : (
+              <div style={{ padding: '16px 24px', color: '#9ca3af', fontSize: '15px', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif' }}>No results for "{searchText}"</div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const DropdownMenu = () => (
     <div style={{ position: 'fixed', top: '52px', left: 0, right: 0, zIndex: 150, backgroundColor: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderBottom: '1px solid #e0e0e0', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', padding: '8px 0 16px 0' }}>
