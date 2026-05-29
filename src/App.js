@@ -336,7 +336,7 @@ export default function App() {
               </div>
               {sending && uploadStatus && (
                 <div style={{ textAlign: 'center', padding: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-                  <p style={{ color: '#0284c7', fontSize: '14px', margin: 0 }}>⏳ {uploadStatus}</p>
+                  <p style={{ color: '#0284c7', fontSize: '14px', margin: 0 }}> {uploadStatus}</p>
                 </div>
               )}
               <div style={{ backgroundColor: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb', textAlign: 'center' }}>
