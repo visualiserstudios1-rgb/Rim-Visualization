@@ -1,6 +1,6 @@
 // App.js — Images upload directly to Cloudinary from browser
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const CLOUDINARY_CLOUD_NAME   = 'dfyjxhjce';
 const CLOUDINARY_UPLOAD_PRESET = 'rimviz_uploads';
@@ -47,6 +47,120 @@ function validateForm({ name, email, rimInch, rimImage, vehicleImage }) {
   return null;
 }
 
+// ── Skeleton shimmer styles (injected once) ──────────────────────────────────
+const skeletonCSS = `
+  @keyframes shimmer {
+    0%   { background-position: -700px 0; }
+    100% { background-position:  700px 0; }
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #e8e8e8 25%, #f2f2f2 50%, #e8e8e8 75%);
+    background-size: 700px 100%;
+    animation: shimmer 1.4s infinite linear;
+    border-radius: 4px;
+  }
+  .skeleton-dark {
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 700px 100%;
+    animation: shimmer 1.4s infinite linear;
+    border-radius: 4px;
+  }
+`;
+
+function SkeletonStyles() {
+  return <style>{skeletonCSS}</style>;
+}
+
+// ── Skeleton-aware image component ───────────────────────────────────────────
+// Shows a shimmer placeholder until the image fully loads, then cross-fades in.
+function SkeletonImage({ src, alt, style = {}, dark = false }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div style={{ position: 'relative', width: style.width || '100%', height: style.height || '100%', flexShrink: 0, ...( style.borderRadius ? { borderRadius: style.borderRadius } : {} ) }}>
+      {/* Shimmer placeholder — visible while image loads */}
+      {!loaded && (
+        <div
+          className={dark ? 'skeleton-dark' : 'skeleton'}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: style.borderRadius || 0,
+          }}
+        />
+      )}
+      {/* Actual image — fades in once loaded */}
+      <img
+        src={src}
+        alt={alt}
+        onLoad={() => setLoaded(true)}
+        style={{
+          ...style,
+          opacity: loaded ? 1 : 0,
+          transition: 'opacity 0.4s ease',
+          display: 'block',
+        }}
+      />
+    </div>
+  );
+}
+
+// ── Professional SVG icon components ─────────────────────────────────────────
+const IconSearch = ({ size = 18, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="7.5" />
+    <line x1="20.5" y1="20.5" x2="16.1" y2="16.1" />
+  </svg>
+);
+
+const IconMenu = ({ size = 18, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round">
+    <line x1="3" y1="7" x2="21" y2="7" />
+    <line x1="3" y1="17" x2="21" y2="17" />
+  </svg>
+);
+
+const IconChevronRight = ({ size = 16, color = '#9ca3af' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+
+const IconLock = ({ size = 15, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="5" y="11" width="14" height="10" rx="2" />
+    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+  </svg>
+);
+
+const IconAlert = ({ size = 15, color = '#dc2626' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <circle cx="12" cy="16" r="0.5" fill={color} />
+  </svg>
+);
+
+const IconCheck = ({ size = 15, color = '#16a34a' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+const IconLoader = ({ size = 15, color = '#0284c7' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
+    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+  </svg>
+);
+
+const IconMail = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="2" />
+    <polyline points="2,4 12,13 22,4" />
+  </svg>
+);
+
+// ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
   const { isMobile, isTablet } = useScreenSize();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', rimInch: '' });
@@ -69,6 +183,7 @@ export default function App() {
   const galleryColumns     = isMobile ? '1fr'      : 'repeat(2, 1fr)';
   const galleryImageHeight = isMobile ? '200px'    : isTablet ? '280px'    : '400px';
   const galleryGap         = isMobile ? '16px'     : isTablet ? '20px'     : '32px';
+  const transformImgHeight = isMobile ? '180px'    : isTablet ? '220px'    : '280px';
 
   const scrollTo = (id) => {
     setMenuOpen(false);
@@ -108,18 +223,15 @@ export default function App() {
 
     setSending(true);
     try {
-      // Upload images to Cloudinary first
       setUploadStatus('Uploading rim image...');
       const rimImageUrl = await uploadToCloudinary(rimImage);
 
       setUploadStatus('Uploading car image...');
       const vehicleImageUrl = await uploadToCloudinary(vehicleImage);
 
-      // Store image URLs in sessionStorage
       sessionStorage.setItem('rimviz_rim_url', rimImageUrl);
       sessionStorage.setItem('rimviz_vehicle_url', vehicleImageUrl);
 
-      // Get PayFast payment data from backend
       setUploadStatus('Preparing payment...');
       const response = await fetch('/api/payment', {
         method: 'POST',
@@ -138,7 +250,6 @@ export default function App() {
         return;
       }
 
-      // Build PayFast form and submit
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = result.payfastUrl;
@@ -166,6 +277,7 @@ export default function App() {
     { keywords: ['home', 'start', 'hero', 'top'], label: 'Home', action: () => { setPage('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); } },
     { keywords: ['get started', 'order', 'submit', 'upload', 'form', 'buy', 'pay', 'payment', 'visuali', 'rim size', 'request'], label: 'Get Started', action: () => { setPage('home'); handleStartNow(); } },
     { keywords: ['3d', 'three', 'coming soon', '3d visual'], label: '3D Visualization', action: () => { setPage('3d'); setMenuOpen(false); } },
+    { keywords: ['before', 'after', 'transformation', 'results', 'compare', 'showcase', 'examples'], label: 'Transformations', action: () => { setPage('transformations'); setMenuOpen(false); } },
     { keywords: ['gallery', 'showcase', 'photos', 'images', 'examples', 'cars', 'wheels'], label: 'Gallery', action: () => { setPage('home'); setTimeout(() => scrollTo('gallery'), 100); } },
     { keywords: ['about', 'rimviz', 'who', 'company', 'south african', 'turnaround', '24h', 'nationwide'], label: 'About', action: () => { setPage('home'); setTimeout(() => scrollTo('about'), 100); } },
     { keywords: ['support', 'help', 'faq', 'question', 'contact', 'email', 'how', 'format', 'jpg', 'png', 'price', 'cost', 'r49', '49.99', 'hours', 'delivery', 'work'], label: 'Support', action: () => { setPage('home'); setTimeout(() => scrollTo('support'), 100); } },
@@ -188,7 +300,7 @@ export default function App() {
     return (
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200 }}>
         <div style={{ backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid #e0e0e0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <IconSearch size={18} color="#333" />
           <input autoFocus type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && results.length > 0) handleSearchSelect(results[0]); if (e.key === 'Escape') { setSearchOpen(false); setSearchText(''); } }}
             placeholder="Search rimviz.com"
@@ -202,7 +314,7 @@ export default function App() {
                 style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', textAlign: 'left', padding: '14px 24px', background: 'none', border: 'none', borderBottom: i < results.length - 1 ? '1px solid #f0f0f0' : 'none', cursor: 'pointer', fontSize: '16px', color: '#1d1d1f', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#f5f5f7'}
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                <IconChevronRight size={16} color="#9ca3af" />
                 {r.label}
               </button>
             )) : (
@@ -220,12 +332,13 @@ export default function App() {
         { label: 'Home',             action: () => { setPage('home'); setMenuOpen(false); } },
         { label: 'Get Started',      action: handleStartNow },
         { label: '3D Visualization', action: () => { setPage('3d'); setMenuOpen(false); } },
+        { label: 'Transformations',  action: () => { setPage('transformations'); setMenuOpen(false); } },
         { label: 'Gallery',          action: () => { setPage('home'); scrollTo('gallery'); } },
         { label: 'About',            action: () => { setPage('home'); scrollTo('about'); } },
         { label: 'Support',          action: () => { setPage('home'); scrollTo('support'); } },
-      ].map((item, i) => (
+      ].map((item, i, arr) => (
         <button key={i} onClick={item.action}
-          style={{ display: 'block', width: '100%', textAlign: 'left', padding: '13px 24px', background: 'none', border: 'none', cursor: 'pointer', fontSize: isMobile ? '15px' : '17px', color: '#1d1d1f', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', borderBottom: i < 5 ? '1px solid #f0f0f0' : 'none' }}
+          style={{ display: 'block', width: '100%', textAlign: 'left', padding: '13px 24px', background: 'none', border: 'none', cursor: 'pointer', fontSize: isMobile ? '15px' : '17px', color: '#1d1d1f', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', borderBottom: i < arr.length - 1 ? '1px solid #f0f0f0' : 'none' }}
           onMouseEnter={e => e.target.style.background = '#f5f5f7'}
           onMouseLeave={e => e.target.style.background = 'none'}>
           {item.label}
@@ -240,20 +353,21 @@ export default function App() {
         <div onClick={() => { setPage('home'); setMenuOpen(false); }} style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: '300', color: '#1d1d1f', cursor: 'pointer', letterSpacing: '-0.5px' }}>RimViz</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <button onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <IconSearch size={18} color="#1d1d1f" />
           </button>
-          <button onClick={() => { setMenuOpen(!menuOpen); setSearchOpen(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            <span style={{ display: 'block', width: '18px', height: '1.5px', backgroundColor: '#1d1d1f', borderRadius: '2px' }}/>
-            <span style={{ display: 'block', width: '18px', height: '1.5px', backgroundColor: '#1d1d1f', borderRadius: '2px' }}/>
+          <button onClick={() => { setMenuOpen(!menuOpen); setSearchOpen(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}>
+            <IconMenu size={18} color="#1d1d1f" />
           </button>
         </div>
       </div>
     </nav>
   );
 
+  // ── 3D Page ────────────────────────────────────────────────────────────────
   if (page === '3d') {
     return (
       <div style={{ width: '100%', minHeight: '100vh', backgroundColor: 'white', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif' }}>
+        <SkeletonStyles />
         {searchOpen && <SearchBar />}
         <NavBar />
         {menuOpen && <DropdownMenu />}
@@ -267,16 +381,133 @@ export default function App() {
     );
   }
 
+  // ── Transformations Page ───────────────────────────────────────────────────
+  if (page === 'transformations') {
+    const pairs = [
+      {
+        before: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80',
+        after:  'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=600&q=80',
+        car: 'BMW 3 Series',
+        rim: '19" Gloss Black',
+      },
+      {
+        before: 'https://images.unsplash.com/photo-1555353540-64580b51c258?w=600&q=80',
+        after:  'https://i.imgur.com/uqinPfy.png',
+        car: 'Mercedes C-Class',
+        rim: '20" Chrome Split',
+      },
+      {
+        before: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=600&q=80',
+        after:  'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&q=80',
+        car: 'Audi A5',
+        rim: '21" Matte Gunmetal',
+      },
+      {
+        before: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&q=80',
+        after:  'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&q=80',
+        car: 'Volkswagen Golf',
+        rim: '18" Polished Silver',
+      },
+    ];
+
+    return (
+      <div style={{ width: '100%', minHeight: '100vh', backgroundColor: 'white', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif' }}>
+        <SkeletonStyles />
+        {searchOpen && <SearchBar />}
+        <NavBar />
+        {menuOpen && <DropdownMenu />}
+        {(menuOpen || searchOpen) && (<div onClick={() => { setMenuOpen(false); setSearchOpen(false); }} style={{ position: 'fixed', inset: 0, zIndex: 99, background: 'transparent' }} />)}
+
+        <div style={{ paddingTop: '52px' }}>
+          {/* Header */}
+          <div style={{ backgroundColor: 'black', textAlign: 'center', padding: isMobile ? '48px 20px 36px' : '80px 40px 60px' }}>
+            <p style={{ fontSize: '11px', letterSpacing: '4px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', margin: '0 0 14px' }}>Real Results</p>
+            <h1 style={{ fontSize: isMobile ? '36px' : '64px', fontWeight: '300', color: 'white', margin: '0', letterSpacing: '-2px', lineHeight: 1.1 }}>
+              Rim <span style={{ fontWeight: '700' }}>Transformations</span>
+            </h1>
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: bodyFontSize, margin: '16px auto 0', fontWeight: '300', maxWidth: '480px', lineHeight: 1.7 }}>
+              See the difference a rim swap makes — before and after every order.
+            </p>
+          </div>
+
+          {/* Grid */}
+          <div style={{ maxWidth: '1280px', margin: '0 auto', padding: sectionPadding }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: galleryGap }}>
+              {pairs.map((p, i) => (
+                <div key={i} style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.09)', border: '1px solid #ebebeb' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+                    {/* Before */}
+                    <div style={{ position: 'relative' }}>
+                      <SkeletonImage
+                        src={p.before}
+                        alt={`${p.car} before`}
+                        style={{ width: '100%', height: transformImgHeight, objectFit: 'cover' }}
+                      />
+                      <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', fontSize: '11px', fontWeight: '600', letterSpacing: '1.5px', textTransform: 'uppercase', padding: '4px 10px', borderRadius: '4px', pointerEvents: 'none' }}>
+                        Before
+                      </div>
+                    </div>
+                    {/* After */}
+                    <div style={{ position: 'relative' }}>
+                      <SkeletonImage
+                        src={p.after}
+                        alt={`${p.car} after`}
+                        style={{ width: '100%', height: transformImgHeight, objectFit: 'cover' }}
+                      />
+                      <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: '11px', fontWeight: '600', letterSpacing: '1.5px', textTransform: 'uppercase', padding: '4px 10px', borderRadius: '4px', pointerEvents: 'none' }}>
+                        After
+                      </div>
+                    </div>
+                  </div>
+                  {/* Card footer */}
+                  <div style={{ padding: '16px 20px', backgroundColor: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <p style={{ fontWeight: '600', fontSize: '15px', color: '#1d1d1f', margin: '0 0 3px' }}>{p.car}</p>
+                      <p style={{ fontSize: '13px', color: '#6b7280', margin: 0, fontWeight: '400' }}>{p.rim}</p>
+                    </div>
+                    <div style={{ width: '1px', height: '28px', backgroundColor: '#e5e7eb' }} />
+                    <button
+                      onClick={handleStartNow}
+                      style={{ fontSize: '13px', fontWeight: '600', color: 'black', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '-0.2px', padding: 0 }}>
+                      Order yours
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div style={{ textAlign: 'center', padding: isMobile ? '0 20px 60px' : '0 24px 80px' }}>
+            <button onClick={() => setPage('home')} style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'white', color: 'black', fontSize: '15px', fontWeight: '600', border: '1.5px solid #d1d5db', cursor: 'pointer', marginRight: '12px' }}>
+              Back to Home
+            </button>
+            <button onClick={handleStartNow} style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'black', color: 'white', fontSize: '15px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
+              Get Your Visualization
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Home Page ──────────────────────────────────────────────────────────────
   return (
     <div style={{ width: '100%', minHeight: '100vh', backgroundColor: 'white', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif' }}>
+      <SkeletonStyles />
       {searchOpen && <SearchBar />}
       <NavBar />
       {menuOpen && <DropdownMenu />}
       {(menuOpen || searchOpen) && (<div onClick={() => { setMenuOpen(false); setSearchOpen(false); }} style={{ position: 'fixed', inset: 0, zIndex: 99, background: 'transparent' }} />)}
 
-      {/* Hero */}
+      {/* Hero — full-screen skeleton until background image loads */}
       <section style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
-        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=80" alt="Premium car" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <SkeletonImage
+          src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=80"
+          alt="Premium car"
+          dark={true}
+          style={{ width: '100%', height: '100vh', objectFit: 'cover' }}
+        />
         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)' }} />
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: isMobile ? '0 20px' : '0 40px' }}>
           <h1 style={{ fontSize: heroFontSize, fontWeight: '300', color: 'white', marginBottom: '16px', lineHeight: 1.15, letterSpacing: isMobile ? '-0.5px' : '-2px' }}>
@@ -292,28 +523,34 @@ export default function App() {
         <section id="order" style={{ padding: sectionPadding, backgroundColor: 'white' }}>
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>
             <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '16px', textAlign: 'center' }}>Get Your Visualization</h2>
-            <p style={{ fontSize: bodyFontSize, color: '#6b7280', textAlign: 'center', marginBottom: '40px' }}>Fill in your details and upload your images!</p>
+            <p style={{ fontSize: bodyFontSize, color: '#6b7280', textAlign: 'center', marginBottom: '40px' }}>Fill in your details and upload your images.</p>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
               {formError && (
-                <div style={{ padding: '12px 16px', backgroundColor: '#fef2f2', borderRadius: '8px', border: '1px solid #fecaca' }}>
-                  <p style={{ color: '#dc2626', fontSize: '14px', margin: 0 }}>⚠️ {formError}</p>
+                <div style={{ padding: '12px 16px', backgroundColor: '#fef2f2', borderRadius: '8px', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <IconAlert size={15} color="#dc2626" />
+                  <p style={{ color: '#dc2626', fontSize: '14px', margin: 0 }}>{formError}</p>
                 </div>
               )}
+
               <div>
                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Full Name *</label>
                 <input type="text" placeholder="John Doe" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} maxLength={100}
                   style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
               </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Email Address *</label>
                 <input type="email" placeholder="you@example.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} maxLength={200}
                   style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
               </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Phone Number (Optional)</label>
                 <input type="tel" placeholder="+27 123 456 789" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} maxLength={20}
                   style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
               </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Desired Rim Size *</label>
                 <select value={formData.rimInch} onChange={(e) => setFormData({ ...formData, rimInch: e.target.value })}
@@ -322,38 +559,53 @@ export default function App() {
                   {['17','18','19','20','21','22','23'].map(s => <option key={s} value={s}>{s} inches</option>)}
                 </select>
               </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Rim Image *</label>
                 <input type="file" accept="image/jpeg,image/png,image/jpg" onChange={(e) => setRimImage(e.target.files[0])}
                   style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', boxSizing: 'border-box' }} />
-                {rimImage && <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '4px' }}>✅ {rimImage.name}</p>}
+                {rimImage && (
+                  <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <IconCheck size={14} color="#16a34a" /> {rimImage.name}
+                  </p>
+                )}
               </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Your Car Image *</label>
                 <input type="file" accept="image/jpeg,image/png,image/jpg" onChange={(e) => setVehicleImage(e.target.files[0])}
                   style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', boxSizing: 'border-box' }} />
-                {vehicleImage && <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '4px' }}>✅ {vehicleImage.name}</p>}
+                {vehicleImage && (
+                  <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <IconCheck size={14} color="#16a34a" /> {vehicleImage.name}
+                  </p>
+                )}
               </div>
+
               {sending && uploadStatus && (
-                <div style={{ textAlign: 'center', padding: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-                  <p style={{ color: '#0284c7', fontSize: '14px', margin: 0 }}> {uploadStatus}</p>
+                <div style={{ textAlign: 'center', padding: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <IconLoader size={15} color="#0284c7" />
+                  <p style={{ color: '#0284c7', fontSize: '14px', margin: 0 }}>{uploadStatus}</p>
                 </div>
               )}
+
               <div style={{ backgroundColor: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb', textAlign: 'center' }}>
                 <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 4px 0' }}>Total amount due</p>
                 <p style={{ fontSize: '28px', fontWeight: '700', color: 'black', margin: 0 }}>R49.99</p>
-                <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>Secure payment via PayFast — Card & EFT accepted</p>
+                <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>Secure payment via PayFast — Card &amp; EFT accepted</p>
               </div>
+
               <button type="submit" disabled={sending}
-                style={{ width: '100%', padding: '16px', borderRadius: '9999px', backgroundColor: sending ? '#666' : 'black', color: 'white', fontSize: '16px', fontWeight: '600', border: 'none', cursor: sending ? 'not-allowed' : 'pointer' }}>
-                {sending ? 'Processing...' : '🔒 Pay R49.99 & Submit'}
+                style={{ width: '100%', padding: '16px', borderRadius: '9999px', backgroundColor: sending ? '#666' : 'black', color: 'white', fontSize: '16px', fontWeight: '600', border: 'none', cursor: sending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <IconLock size={15} color="white" />
+                {sending ? 'Processing...' : 'Pay R49.99 & Submit'}
               </button>
             </form>
           </div>
         </section>
       )}
 
-      {/* Gallery */}
+      {/* Gallery — each image gets its own skeleton */}
       <section id="gallery" style={{ padding: sectionPadding, backgroundColor: '#f9fafb' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: isMobile ? '24px' : '48px', textAlign: 'center' }}>Showcase Gallery</h2>
@@ -364,7 +616,19 @@ export default function App() {
               { src: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=600&q=80', alt: 'Chrome rims' },
               { src: 'https://i.imgur.com/uqinPfy.png', alt: 'Performance wheels' },
             ].map((img, i) => (
-              <img key={i} src={img.src} alt={img.alt} style={{ width: '100%', height: galleryImageHeight, objectFit: 'cover', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', display: 'block' }} />
+              <SkeletonImage
+                key={i}
+                src={img.src}
+                alt={img.alt}
+                style={{
+                  width: '100%',
+                  height: galleryImageHeight,
+                  objectFit: 'cover',
+                  borderRadius: '16px',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                  display: 'block',
+                }}
+              />
             ))}
           </div>
         </div>
@@ -415,14 +679,17 @@ export default function App() {
           <div style={{ marginTop: '40px', backgroundColor: 'black', borderRadius: '16px', padding: '32px', textAlign: 'center' }}>
             <p style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', marginBottom: '8px' }}>Still have questions?</p>
             <p style={{ color: '#9ca3af', fontSize: bodyFontSize, fontWeight: '300', marginBottom: '16px' }}>We would love to hear from you.</p>
-            <a href="mailto:visualiserstudios1@gmail.com" style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', textDecoration: 'none', backgroundColor: '#1d1d1f', padding: '12px 28px', borderRadius: '9999px', border: '1px solid #ffffff33' }}>visualiserstudios1@gmail.com</a>
+            <a href="mailto:visualiserstudios1@gmail.com" style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', textDecoration: 'none', backgroundColor: '#1d1d1f', padding: '12px 28px', borderRadius: '9999px', border: '1px solid #ffffff33', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <IconMail size={16} color="white" />
+              visualiserstudios1@gmail.com
+            </a>
           </div>
         </div>
       </section>
 
       {/* Footer */}
       <footer style={{ backgroundColor: 'black', color: 'white', padding: isMobile ? '32px 16px' : '48px 24px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>  South Africa
+        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
           <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2025 RimViz. All rights reserved.</p>
         </div>
       </footer>
