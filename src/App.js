@@ -467,7 +467,7 @@ export default function App() {
                     </div>
                     <div style={{ width: '1px', height: '28px', backgroundColor: '#e5e7eb' }} />
                     <button
-                      onClick={handleStartNow}
+                      onClick={() => { setPage('home'); setShowForm(true); setTimeout(() => document.getElementById('order')?.scrollIntoView({ behavior: 'smooth' }), 150); }}
                       style={{ fontSize: '13px', fontWeight: '600', color: 'black', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '-0.2px', padding: 0 }}>
                       Order yours
                     </button>
@@ -482,7 +482,7 @@ export default function App() {
             <button onClick={() => setPage('home')} style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'white', color: 'black', fontSize: '15px', fontWeight: '600', border: '1.5px solid #d1d5db', cursor: 'pointer', marginRight: '12px' }}>
               Back to Home
             </button>
-            <button onClick={handleStartNow} style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'black', color: 'white', fontSize: '15px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
+            <button onClick={() => { setPage('home'); setShowForm(true); setTimeout(() => document.getElementById('order')?.scrollIntoView({ behavior: 'smooth' }), 150); }} style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'black', color: 'white', fontSize: '15px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
               Get Your Visualization
             </button>
           </div>
