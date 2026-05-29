@@ -1,6 +1,6 @@
 // App.js — Images upload directly to Cloudinary from browser
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 const CLOUDINARY_CLOUD_NAME   = 'dfyjxhjce';
 const CLOUDINARY_UPLOAD_PRESET = 'rimviz_uploads';
