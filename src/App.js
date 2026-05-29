@@ -1,30 +1,6 @@
-// App.js — Images upload directly to Cloudinary from browser
-// Only Cloudinary cloud name + preset are needed here (safe for frontend)
-// All email sending stays on the secure backend
+// App.js — Images sent to backend which uploads to Cloudinary securely
 
 import { useState, useEffect } from 'react';
-
-const CLOUDINARY_CLOUD_NAME   = 'dfyjxhjce';
-const CLOUDINARY_UPLOAD_PRESET = 'rimviz_uploads';
-
-async function uploadToCloudinary(file) {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-    { method: 'POST', body: formData }
-  );
-
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error?.message || 'Upload failed');
-  }
-
-  const data = await res.json();
-  return data.secure_url;
-}
 
 function useScreenSize() {
   const [width, setWidth] = useState(window.innerWidth);
@@ -111,23 +87,30 @@ export default function App() {
 
     setSending(true);
     try {
-      setUploadStatus('Uploading rim image...');
-      const rimImageUrl = await uploadToCloudinary(rimImage);
+      // Convert images to base64
+      setUploadStatus('Preparing images...');
+      const toBase64 = (file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+      });
 
-      setUploadStatus('Uploading car image...');
-      const vehicleImageUrl = await uploadToCloudinary(vehicleImage);
+      const rimImageBase64     = await toBase64(rimImage);
+      const vehicleImageBase64 = await toBase64(vehicleImage);
 
+      // Send everything to backend
       setUploadStatus('Sending request...');
       const response = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name:         formData.name.trim(),
-          email:        formData.email.trim(),
-          phone:        formData.phone.trim(),
-          rimSize:      formData.rimInch,
-          rimImageUrl,
-          vehicleImageUrl,
+          name:                formData.name.trim(),
+          email:               formData.email.trim(),
+          phone:               formData.phone.trim(),
+          rimSize:             formData.rimInch,
+          rimImageBase64,
+          vehicleImageBase64,
         }),
       });
 
@@ -321,7 +304,7 @@ export default function App() {
           <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginTop: '16px' }}>Simple process. Professional results. Complete clarity.</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginTop: '48px', flexWrap: 'wrap' }}>
             {[
-              { value: '12h', label: 'Turnaround Time' },
+              { value: '2h', label: 'Turnaround Time' },
               { value: '99.9%', label: 'Satisfaction Focus' },
               { value: 'SA', label: 'Nationwide Service' },
             ].map((stat, i) => (
@@ -343,6 +326,7 @@ export default function App() {
             { q: 'How does RimViz work?', a: 'Simply fill in your details, upload a photo of your rim and your vehicle, and submit. Our team will create a professional visualisation showing exactly how your chosen rims will look on your car.' },
             { q: 'How long does a visualisation take?', a: 'Most visualisations are delivered within 24 to 48 hours. We will contact you directly at the email address you provided.' },
             { q: 'What image formats are accepted?', a: 'We accept JPG and PNG images only. Make sure your photos are clear and well lit for the best results.' },
+            { q: 'What rim sizes do you support?', a: 'We currently support rim sizes from 17 to 23 inches.' },
             { q: 'Is there a cost for the visualisation?', a: 'Contact us directly for pricing information. We will get back to you as soon as possible.' },
             { q: 'How do I contact RimViz?', a: 'You can reach us at visualiserstudios1@gmail.com. We typically respond within 24 hours.' },
           ].map((item, i) => (
@@ -364,8 +348,8 @@ export default function App() {
 
       {/* Footer */}
       <footer style={{ backgroundColor: 'black', color: 'white', padding: isMobile ? '32px 16px' : '48px 24px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}> South Africa
-          <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2026 RimViz. All rights reserved.</p>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>South Africa
+          <p style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2025 RimViz. All rights reserved.</p>
         </div>
       </footer>
     </div>
