@@ -362,7 +362,7 @@ export default function App() {
               { src: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80', alt: 'Black rims' },
               { src: 'https://images.unsplash.com/photo-1555353540-64580b51c258?w=600&q=80', alt: 'Silver rims' },
               { src: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=600&q=80', alt: 'Chrome rims' },
-              { src: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80', alt: 'Performance wheels' },
+              { src: 'https://i.imgur.com/uqinPfy.png', alt: 'Performance wheels' },
             ].map((img, i) => (
               <img key={i} src={img.src} alt={img.alt} style={{ width: '100%', height: galleryImageHeight, objectFit: 'cover', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', display: 'block' }} />
             ))}
