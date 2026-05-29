@@ -1,5 +1,4 @@
 // /api/submit.js — Vercel Serverless Function
-
 const rateLimit = new Map();
 const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000;
@@ -98,22 +97,21 @@ module.exports = async function handler(req, res) {
       }),
     });
 
-    const emailBody = await emailRes.text();
-
     if (!emailRes.ok) {
-      throw new Error(emailBody);
+      const errText = await emailRes.text();
+      throw new Error(errText);
     }
   } catch (err) {
-    
     return res.status(500).json({ error: 'Failed to send notification. Please try again.' });
   }
 
   return res.status(200).json({ success: true });
 };
+
 module.exports.config = {
   api: {
     bodyParser: {
-      sizeLimit: '50mb',
+      sizeLimit: '3mb',
     },
   },
 };
