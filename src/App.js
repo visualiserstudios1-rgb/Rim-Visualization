@@ -385,10 +385,10 @@ export default function App() {
   if (page === 'transformations') {
     const pairs = [
       {
-        before: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80',
-        after:  'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=600&q=80',
-        car: 'BMW 3 Series',
-        rim: '19" Gloss Black',
+        before: 'https://i.imgur.com/rQ33C2j.jpeg',
+        after:  'https://i.imgur.com/uqinPfy.png.',
+        car: 'Toyota Corolla Quest',
+        rim: '16" Chrome',
       },
       {
         before: 'https://images.unsplash.com/photo-1555353540-64580b51c258?w=600&q=80',
