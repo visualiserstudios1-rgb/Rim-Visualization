@@ -1,10 +1,11 @@
 // /api/payment.js — Creates a PayFast payment request
+
 const crypto = require('crypto');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
 
-  const { name, email, phone, rimSize } = req.body;
+  const { name, email, phone, rimSize, rimImageUrl, vehicleImageUrl } = req.body;
 
   if (!name || !email || !rimSize) {
     return res.status(400).json({ error: 'Missing required fields.' });
@@ -30,15 +31,22 @@ module.exports = async function handler(req, res) {
     custom_str1:      email,
     custom_str2:      phone || '',
     custom_str3:      rimSize,
+    custom_str4:      rimImageUrl || '',
+    custom_str5:      vehicleImageUrl || '',
   };
 
   // Generate signature
   const pfParamString = Object.entries(data)
-    .map(([k, v]) => `${k}=${encodeURIComponent(v.trim()).replace(/%20/g, '+')}`)
+    .map(([k, v]) => `${k}=${encodeURIComponent(String(v).trim()).replace(/%20/g, '+')}`)
     .join('&') + `&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, '+')}`;
 
   const signature = crypto.createHash('md5').update(pfParamString).digest('hex');
   data.signature = signature;
 
-  return res.status(200).json({ payfastData: data, payfastUrl: 'https://sandbox.payfast.co.za/eng/process' });
+  // Switch to live PayFast URL
+  const payfastUrl = process.env.PAYFAST_SANDBOX === 'true'
+    ? 'https://sandbox.payfast.co.za/eng/process'
+    : 'https://www.payfast.co.za/eng/process';
+
+  return res.status(200).json({ payfastData: data, payfastUrl });
 };
