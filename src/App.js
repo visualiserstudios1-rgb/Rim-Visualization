@@ -392,18 +392,17 @@ export default function App() {
       setUploadStatus('Uploading car image...');
       const vehicleImageUrl = await uploadToCloudinary(vehicleImage);
 
-      sessionStorage.setItem('rimviz_rim_url', rimImageUrl);
-      sessionStorage.setItem('rimviz_vehicle_url', vehicleImageUrl);
-
       setUploadStatus('Preparing payment...');
       const response = await fetch('/api/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name:    formData.name.trim(),
-          email:   formData.email.trim(),
-          phone:   formData.phone.trim(),
-          rimSize: formData.rimInch,
+          name:           formData.name.trim(),
+          email:          formData.email.trim(),
+          phone:          formData.phone.trim(),
+          rimSize:        formData.rimInch,
+          rimImageUrl,
+          vehicleImageUrl,
         }),
       });
 
