@@ -585,12 +585,12 @@ export default function App() {
           </div>
 
           {/* CTA */}
-          <div style={{ textAlign: 'center', padding: isMobile ? '0 20px 60px' : '0 24px 80px' }}>
-            <button onClick={() => setPage('home')} style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'white', color: 'black', fontSize: '15px', fontWeight: '600', border: '1.5px solid #d1d5db', cursor: 'pointer', marginRight: '12px' }}>
-              Back to Home
-            </button>
-            <button onClick={goToForm} style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'black', color: 'white', fontSize: '15px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: isMobile ? '0 20px 60px' : '0 24px 80px' }}>
+            <button onClick={goToForm} style={{ width: isMobile ? '100%' : 'auto', padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'black', color: 'white', fontSize: '15px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
               Get Your Visualization
+            </button>
+            <button onClick={() => setPage('home')} style={{ width: isMobile ? '100%' : 'auto', padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'white', color: 'black', fontSize: '15px', fontWeight: '600', border: '1.5px solid #d1d5db', cursor: 'pointer' }}>
+              Back to Home
             </button>
           </div>
         </div>
