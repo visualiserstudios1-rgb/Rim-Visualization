@@ -1,6 +1,6 @@
 // App.js — Images upload directly to Cloudinary from browser
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const CLOUDINARY_CLOUD_NAME   = 'dfyjxhjce';
 const CLOUDINARY_UPLOAD_PRESET = 'rimviz_uploads';
@@ -47,7 +47,7 @@ function validateForm({ name, email, rimInch, rimImage, vehicleImage }) {
   return null;
 }
 
-// ── Skeleton shimmer styles (injected once) ──────────────────────────────────
+// ── Skeleton shimmer styles ───────────────────────────────────────────────────
 const skeletonCSS = `
   @keyframes shimmer {
     0%   { background-position: -700px 0; }
@@ -71,119 +71,260 @@ function SkeletonStyles() {
   return <style>{skeletonCSS}</style>;
 }
 
-// ── Skeleton-aware image component ───────────────────────────────────────────
-// Shows a shimmer placeholder until the image fully loads, then cross-fades in.
+// ── Skeleton-aware image ──────────────────────────────────────────────────────
 function SkeletonImage({ src, alt, style = {}, dark = false }) {
   const [loaded, setLoaded] = useState(false);
-
   return (
-    <div style={{ position: 'relative', width: style.width || '100%', height: style.height || '100%', flexShrink: 0, ...( style.borderRadius ? { borderRadius: style.borderRadius } : {} ) }}>
-      {/* Shimmer placeholder — visible while image loads */}
+    <div style={{ position: 'relative', width: style.width || '100%', height: style.height || '100%', flexShrink: 0, ...(style.borderRadius ? { borderRadius: style.borderRadius } : {}) }}>
       {!loaded && (
-        <div
-          className={dark ? 'skeleton-dark' : 'skeleton'}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            borderRadius: style.borderRadius || 0,
-          }}
-        />
+        <div className={dark ? 'skeleton-dark' : 'skeleton'} style={{ position: 'absolute', inset: 0, borderRadius: style.borderRadius || 0 }} />
       )}
-      {/* Actual image — fades in once loaded */}
-      <img
-        src={src}
-        alt={alt}
-        onLoad={() => setLoaded(true)}
-        style={{
-          ...style,
-          opacity: loaded ? 1 : 0,
-          transition: 'opacity 0.4s ease',
-          display: 'block',
-        }}
-      />
+      <img src={src} alt={alt} onLoad={() => setLoaded(true)} style={{ ...style, opacity: loaded ? 1 : 0, transition: 'opacity 0.4s ease', display: 'block' }} />
     </div>
   );
 }
 
-// ── Professional SVG icon components ─────────────────────────────────────────
+// ── Before / After drag slider ────────────────────────────────────────────────
+function BeforeAfterSlider({ before, after, alt, height }) {
+  const [pos, setPos]               = useState(50);
+  const [dragging, setDragging]     = useState(false);
+  const [beforeLoaded, setBeforeLoaded] = useState(false);
+  const [afterLoaded, setAfterLoaded]   = useState(false);
+  const [hinted, setHinted]         = useState(false);
+  const containerRef                = useRef(null);
+  const bothLoaded                  = beforeLoaded && afterLoaded;
+
+  // Animate a small hint swipe once both images have loaded
+  useEffect(() => {
+    if (!bothLoaded || hinted) return;
+    let frame;
+    let start = null;
+    const duration = 700; // ms
+    const animate = (ts) => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      // ease out: go from 50 → 35 → 50
+      const eased = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p;
+      setPos(50 - eased * 15);
+      if (p < 1) {
+        frame = requestAnimationFrame(animate);
+      } else {
+        setPos(50);
+        setHinted(true);
+      }
+    };
+    const timer = setTimeout(() => { frame = requestAnimationFrame(animate); }, 600);
+    return () => { clearTimeout(timer); cancelAnimationFrame(frame); };
+  }, [bothLoaded, hinted]);
+
+  const getPercent = useCallback((clientX) => {
+    if (!containerRef.current) return 50;
+    const rect = containerRef.current.getBoundingClientRect();
+    return Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
+  }, []);
+
+  const onMouseDown  = (e) => { e.preventDefault(); setDragging(true); };
+  const onMouseMove  = useCallback((e) => { if (dragging) setPos(getPercent(e.clientX)); }, [dragging, getPercent]);
+  const onMouseUp    = useCallback(() => setDragging(false), []);
+  const onTouchStart = (e) => { e.preventDefault(); setDragging(true); };
+  const onTouchMove  = useCallback((e) => { if (dragging) setPos(getPercent(e.touches[0].clientX)); }, [dragging, getPercent]);
+  const onTouchEnd   = useCallback(() => setDragging(false), []);
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseUp}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height,
+        overflow: 'hidden',
+        cursor: dragging ? 'grabbing' : 'ew-resize',
+        userSelect: 'none',
+        touchAction: 'none',
+        WebkitUserSelect: 'none',
+      }}
+    >
+      {/* Skeleton until both images load */}
+      {!bothLoaded && (
+        <div className="skeleton" style={{ position: 'absolute', inset: 0, zIndex: 3 }} />
+      )}
+
+      {/* BEFORE — full width base layer */}
+      <img
+        src={before}
+        alt={`${alt} before`}
+        onLoad={() => setBeforeLoaded(true)}
+        draggable={false}
+        style={{
+          position: 'absolute', inset: 0,
+          width: '100%', height: '100%',
+          objectFit: 'cover',
+          opacity: bothLoaded ? 1 : 0,
+          display: 'block',
+        }}
+      />
+
+      {/* AFTER — clipped to left `pos`% */}
+      <div style={{ position: 'absolute', inset: 0, width: `${pos}%`, overflow: 'hidden' }}>
+        <img
+          src={after}
+          alt={`${alt} after`}
+          onLoad={() => setAfterLoaded(true)}
+          draggable={false}
+          style={{
+            position: 'absolute', inset: 0,
+            width: containerRef.current ? `${containerRef.current.offsetWidth}px` : '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: bothLoaded ? 1 : 0,
+            display: 'block',
+            maxWidth: 'none',
+          }}
+        />
+      </div>
+
+      {bothLoaded && (
+        <>
+          {/* Divider line */}
+          <div style={{
+            position: 'absolute', top: 0, bottom: 0,
+            left: `${pos}%`,
+            transform: 'translateX(-50%)',
+            width: '2px',
+            background: 'white',
+            boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+            zIndex: 4,
+            pointerEvents: 'none',
+          }} />
+
+          {/* Drag handle */}
+          <div
+            onMouseDown={onMouseDown}
+            onTouchStart={onTouchStart}
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: `${pos}%`,
+              transform: 'translate(-50%, -50%)',
+              zIndex: 5,
+              width: '44px',
+              height: '44px',
+              borderRadius: '50%',
+              backgroundColor: 'white',
+              boxShadow: '0 2px 20px rgba(0,0,0,0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'grab',
+              gap: '3px',
+            }}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 6 15 12 9 18" />
+            </svg>
+          </div>
+
+          {/* AFTER label — left side */}
+          <div style={{
+            position: 'absolute', top: '12px', left: '12px',
+            zIndex: 4, pointerEvents: 'none',
+            background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            color: 'white', fontSize: '11px', fontWeight: '600',
+            letterSpacing: '1.5px', textTransform: 'uppercase',
+            padding: '4px 10px', borderRadius: '4px',
+          }}>After</div>
+
+          {/* BEFORE label — right side */}
+          <div style={{
+            position: 'absolute', top: '12px', right: '12px',
+            zIndex: 4, pointerEvents: 'none',
+            background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            color: 'white', fontSize: '11px', fontWeight: '600',
+            letterSpacing: '1.5px', textTransform: 'uppercase',
+            padding: '4px 10px', borderRadius: '4px',
+          }}>Before</div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── SVG Icons ─────────────────────────────────────────────────────────────────
 const IconSearch = ({ size = 18, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="7.5" />
-    <line x1="20.5" y1="20.5" x2="16.1" y2="16.1" />
+    <circle cx="11" cy="11" r="7.5" /><line x1="20.5" y1="20.5" x2="16.1" y2="16.1" />
   </svg>
 );
-
 const IconMenu = ({ size = 18, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round">
-    <line x1="3" y1="7" x2="21" y2="7" />
-    <line x1="3" y1="17" x2="21" y2="17" />
+    <line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="17" x2="21" y2="17" />
   </svg>
 );
-
 const IconChevronRight = ({ size = 16, color = '#9ca3af' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="9 18 15 12 9 6" />
   </svg>
 );
-
 const IconLock = ({ size = 15, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="5" y="11" width="14" height="10" rx="2" />
-    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    <rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" />
   </svg>
 );
-
 const IconAlert = ({ size = 15, color = '#dc2626' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="9" />
-    <line x1="12" y1="8" x2="12" y2="12" />
-    <circle cx="12" cy="16" r="0.5" fill={color} />
+    <circle cx="12" cy="12" r="9" /><line x1="12" y1="8" x2="12" y2="12" /><circle cx="12" cy="16" r="0.5" fill={color} />
   </svg>
 );
-
 const IconCheck = ({ size = 15, color = '#16a34a' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
-
 const IconLoader = ({ size = 15, color = '#0284c7' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
     <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
   </svg>
 );
-
 const IconMail = ({ size = 16, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="4" width="20" height="16" rx="2" />
-    <polyline points="2,4 12,13 22,4" />
+    <rect x="2" y="4" width="20" height="16" rx="2" /><polyline points="2,4 12,13 22,4" />
   </svg>
 );
 
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
   const { isMobile, isTablet } = useScreenSize();
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', rimInch: '' });
-  const [rimImage, setRimImage] = useState(null);
+  const [formData, setFormData]     = useState({ name: '', email: '', phone: '', rimInch: '' });
+  const [rimImage, setRimImage]     = useState(null);
   const [vehicleImage, setVehicleImage] = useState(null);
-  const [sending, setSending] = useState(false);
+  const [sending, setSending]       = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
-  const [formError, setFormError] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [page, setPage] = useState('home');
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [formError, setFormError]   = useState('');
+  const [showForm, setShowForm]     = useState(false);
+  const [page, setPage]             = useState('home');
+  const [menuOpen, setMenuOpen]     = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
 
-  const heroFontSize       = isMobile ? '36px'     : isTablet ? '52px'     : '72px';
-  const heroSubFontSize    = isMobile ? '15px'     : isTablet ? '18px'     : '22px';
-  const headingFontSize    = isMobile ? '28px'     : isTablet ? '38px'     : '48px';
-  const bodyFontSize       = isMobile ? '15px'     : isTablet ? '16px'     : '18px';
-  const sectionPadding     = isMobile ? '40px 16px': isTablet ? '60px 32px': '80px 24px';
-  const galleryColumns     = isMobile ? '1fr'      : 'repeat(2, 1fr)';
-  const galleryImageHeight = isMobile ? '200px'    : isTablet ? '280px'    : '400px';
-  const galleryGap         = isMobile ? '16px'     : isTablet ? '20px'     : '32px';
-  const transformImgHeight = isMobile ? '180px'    : isTablet ? '220px'    : '280px';
+  const heroFontSize       = isMobile ? '36px'      : isTablet ? '52px'      : '72px';
+  const heroSubFontSize    = isMobile ? '15px'      : isTablet ? '18px'      : '22px';
+  const headingFontSize    = isMobile ? '28px'      : isTablet ? '38px'      : '48px';
+  const bodyFontSize       = isMobile ? '15px'      : isTablet ? '16px'      : '18px';
+  const sectionPadding     = isMobile ? '40px 16px' : isTablet ? '60px 32px' : '80px 24px';
+  const galleryColumns     = isMobile ? '1fr'       : 'repeat(2, 1fr)';
+  const galleryImageHeight = isMobile ? '200px'     : isTablet ? '280px'     : '400px';
+  const galleryGap         = isMobile ? '16px'      : isTablet ? '20px'      : '32px';
+  const sliderHeight       = isMobile ? '220px'     : isTablet ? '260px'     : '320px';
 
   const scrollTo = (id) => {
     setMenuOpen(false);
@@ -196,27 +337,21 @@ export default function App() {
     setTimeout(() => document.getElementById('order')?.scrollIntoView({ behavior: 'smooth' }), 100);
   };
 
+  const goToForm = () => {
+    setPage('home');
+    setShowForm(true);
+    setTimeout(() => document.getElementById('order')?.scrollIntoView({ behavior: 'smooth' }), 150);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
 
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-    if (rimImage && !allowedTypes.includes(rimImage.type)) {
-      setFormError('Rim image must be a JPG or PNG file.');
-      return;
-    }
-    if (vehicleImage && !allowedTypes.includes(vehicleImage.type)) {
-      setFormError('Car image must be a JPG or PNG file.');
-      return;
-    }
-    if (rimImage && rimImage.size > 35 * 1024 * 1024) {
-      setFormError('Rim image must be under 35MB.');
-      return;
-    }
-    if (vehicleImage && vehicleImage.size > 35 * 1024 * 1024) {
-      setFormError('Car image must be under 35MB.');
-      return;
-    }
+    if (rimImage && !allowedTypes.includes(rimImage.type)) { setFormError('Rim image must be a JPG or PNG file.'); return; }
+    if (vehicleImage && !allowedTypes.includes(vehicleImage.type)) { setFormError('Car image must be a JPG or PNG file.'); return; }
+    if (rimImage && rimImage.size > 35 * 1024 * 1024) { setFormError('Rim image must be under 35MB.'); return; }
+    if (vehicleImage && vehicleImage.size > 35 * 1024 * 1024) { setFormError('Car image must be under 35MB.'); return; }
 
     const validationError = validateForm({ ...formData, rimImage, vehicleImage });
     if (validationError) { setFormError(validationError); return; }
@@ -245,23 +380,16 @@ export default function App() {
       });
 
       const result = await response.json();
-      if (!response.ok) {
-        setFormError(result.error || 'Something went wrong. Please try again.');
-        return;
-      }
+      if (!response.ok) { setFormError(result.error || 'Something went wrong. Please try again.'); return; }
 
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = result.payfastUrl;
-
       Object.entries(result.payfastData).forEach(([key, value]) => {
         const input = document.createElement('input');
-        input.type  = 'hidden';
-        input.name  = key;
-        input.value = value;
+        input.type = 'hidden'; input.name = key; input.value = value;
         form.appendChild(input);
       });
-
       document.body.appendChild(form);
       form.submit();
 
@@ -289,11 +417,7 @@ export default function App() {
     return searchTargets.filter(t => t.keywords.some(k => k.includes(lower) || lower.includes(k)));
   };
 
-  const handleSearchSelect = (target) => {
-    target.action();
-    setSearchOpen(false);
-    setSearchText('');
-  };
+  const handleSearchSelect = (target) => { target.action(); setSearchOpen(false); setSearchText(''); };
 
   const SearchBar = () => {
     const results = getSearchResults(searchText);
@@ -386,7 +510,7 @@ export default function App() {
     const pairs = [
       {
         before: 'https://i.imgur.com/rQ33C2j.jpeg',
-        after:  'https://i.imgur.com/uqinPfy.png.',
+        after:  'https://i.imgur.com/uqinPfy.png',
         car: 'Toyota Corolla Quest',
         rim: '16" Chrome',
       },
@@ -399,14 +523,14 @@ export default function App() {
       {
         before: 'https://i.imgur.com/aXUEiWb.jpeg',
         after:  'https://i.imgur.com/Irra7Am.png',
-        car: 'Volkswagen Gol',
+        car: 'Volkswagen Golf',
         rim: '17" BBS BLK Face',
       },
       {
         before: 'https://i.imgur.com/wGvD3qM.jpeg',
         after:  'https://i.imgur.com/IkjvnGX.png',
         car: 'Suzuki Ertiga',
-        rim: '16" White steel',
+        rim: '16" White Steel',
       },
     ];
 
@@ -426,7 +550,7 @@ export default function App() {
               Rim <span style={{ fontWeight: '700' }}>Transformations</span>
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: bodyFontSize, margin: '16px auto 0', fontWeight: '300', maxWidth: '480px', lineHeight: 1.7 }}>
-              See the difference a rim swap makes — before and after every order.
+              Drag the slider to reveal the transformation on every car.
             </p>
           </div>
 
@@ -435,30 +559,13 @@ export default function App() {
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: galleryGap }}>
               {pairs.map((p, i) => (
                 <div key={i} style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.09)', border: '1px solid #ebebeb' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-                    {/* Before */}
-                    <div style={{ position: 'relative' }}>
-                      <SkeletonImage
-                        src={p.before}
-                        alt={`${p.car} before`}
-                        style={{ width: '100%', height: transformImgHeight, objectFit: 'cover' }}
-                      />
-                      <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', fontSize: '11px', fontWeight: '600', letterSpacing: '1.5px', textTransform: 'uppercase', padding: '4px 10px', borderRadius: '4px', pointerEvents: 'none' }}>
-                        Before
-                      </div>
-                    </div>
-                    {/* After */}
-                    <div style={{ position: 'relative' }}>
-                      <SkeletonImage
-                        src={p.after}
-                        alt={`${p.car} after`}
-                        style={{ width: '100%', height: transformImgHeight, objectFit: 'cover' }}
-                      />
-                      <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: '11px', fontWeight: '600', letterSpacing: '1.5px', textTransform: 'uppercase', padding: '4px 10px', borderRadius: '4px', pointerEvents: 'none' }}>
-                        After
-                      </div>
-                    </div>
-                  </div>
+                  {/* Slider */}
+                  <BeforeAfterSlider
+                    before={p.before}
+                    after={p.after}
+                    alt={p.car}
+                    height={sliderHeight}
+                  />
                   {/* Card footer */}
                   <div style={{ padding: '16px 20px', backgroundColor: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
@@ -467,7 +574,7 @@ export default function App() {
                     </div>
                     <div style={{ width: '1px', height: '28px', backgroundColor: '#e5e7eb' }} />
                     <button
-                      onClick={() => { setPage('home'); setShowForm(true); setTimeout(() => document.getElementById('order')?.scrollIntoView({ behavior: 'smooth' }), 150); }}
+                      onClick={goToForm}
                       style={{ fontSize: '13px', fontWeight: '600', color: 'black', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '-0.2px', padding: 0 }}>
                       Order yours
                     </button>
@@ -482,7 +589,7 @@ export default function App() {
             <button onClick={() => setPage('home')} style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'white', color: 'black', fontSize: '15px', fontWeight: '600', border: '1.5px solid #d1d5db', cursor: 'pointer', marginRight: '12px' }}>
               Back to Home
             </button>
-            <button onClick={() => { setPage('home'); setShowForm(true); setTimeout(() => document.getElementById('order')?.scrollIntoView({ behavior: 'smooth' }), 150); }} style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'black', color: 'white', fontSize: '15px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
+            <button onClick={goToForm} style={{ padding: '14px 36px', borderRadius: '9999px', backgroundColor: 'black', color: 'white', fontSize: '15px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
               Get Your Visualization
             </button>
           </div>
@@ -500,7 +607,7 @@ export default function App() {
       {menuOpen && <DropdownMenu />}
       {(menuOpen || searchOpen) && (<div onClick={() => { setMenuOpen(false); setSearchOpen(false); }} style={{ position: 'fixed', inset: 0, zIndex: 99, background: 'transparent' }} />)}
 
-      {/* Hero — full-screen skeleton until background image loads */}
+      {/* Hero */}
       <section style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
         <SkeletonImage
           src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=80"
@@ -605,7 +712,7 @@ export default function App() {
         </section>
       )}
 
-      {/* Gallery — each image gets its own skeleton */}
+      {/* Gallery */}
       <section id="gallery" style={{ padding: sectionPadding, backgroundColor: '#f9fafb' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: isMobile ? '24px' : '48px', textAlign: 'center' }}>Showcase Gallery</h2>
@@ -620,14 +727,7 @@ export default function App() {
                 key={i}
                 src={img.src}
                 alt={img.alt}
-                style={{
-                  width: '100%',
-                  height: galleryImageHeight,
-                  objectFit: 'cover',
-                  borderRadius: '16px',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-                  display: 'block',
-                }}
+                style={{ width: '100%', height: galleryImageHeight, objectFit: 'cover', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', display: 'block' }}
               />
             ))}
           </div>
@@ -644,7 +744,7 @@ export default function App() {
             {[
               { value: '24h', label: 'Turnaround Time' },
               { value: '100%', label: 'Satisfaction Focus' },
-              { value: 'ZA', label: 'Nationwide Service' },
+              { value: 'ZA',  label: 'Nationwide Service' },
             ].map((stat, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: '36px', fontWeight: '700', color: 'black', margin: 0 }}>{stat.value}</p>
