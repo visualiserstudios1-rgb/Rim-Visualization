@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Successful — RimViz</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f9fafb;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid #d2d2d7;
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+    }
+    nav span {
+      font-size: 20px;
+      font-weight: 300;
+      color: #1d1d1f;
+      letter-spacing: -0.5px;
+      cursor: pointer;
+    }
+    nav span b { font-weight: 700; }
+
+    .container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+      border: 1px solid #f0f0f0;
+      text-align: center;
+    }
+
+    .checkmark {
+      width: 72px;
+      height: 72px;
+      background: black;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+
+    .checkmark svg {
+      width: 36px;
+      height: 36px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1d1d1f;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #6b7280;
+      line-height: 1.7;
+      margin-bottom: 36px;
+      font-weight: 300;
+    }
+
+    .info-box {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      border: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    .info-box p {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+
+    .info-box strong {
+      font-size: 15px;
+      color: #1d1d1f;
+    }
+
+    .steps {
+      text-align: left;
+      margin-bottom: 36px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .step-num {
+      background: black;
+      color: white;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step p {
+      font-size: 15px;
+      color: #374151;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 36px;
+      border-radius: 9999px;
+      background: black;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover { opacity: 0.85; }
+
+    .footer-note {
+      margin-top: 24px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 36px 24px; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <span onclick="window.location.href='/'">Rim<b>Viz</b></span>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+
+      <!-- Checkmark -->
+      <div class="checkmark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+
+      <h1>Payment Successful</h1>
+      <p class="subtitle">
+        Thank you for your order! We have received your payment and your visualisation is now in the queue.
+      </p>
+
+      <!-- What happens next -->
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <p>Our team will review your uploaded images and begin working on your visualisation right away.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <p>Your completed visualisation will be emailed to you within <strong>24 to 48 hours</strong>.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <p>Check your inbox for a confirmation email with your order reference number.</p>
+        </div>
+      </div>
+
+      <a href="/" class="btn">Back to Home</a>
+
+      <p class="footer-note">
+        Questions? Email us at <a href="mailto:visualiserstudios1@gmail.com" style="color: #1d1d1f; font-weight: 500;">visualiserstudios1@gmail.com</a>
+      </p>
+
+    </div>
+  </div>
+
+</body>
+</html>
