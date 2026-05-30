@@ -1,6 +1,14 @@
 // App.js — Images upload directly to Cloudinary from browser
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { inject } from '@vercel/analytics';
+import ReactGA from 'react-ga4';
+
+// Initialise Vercel Analytics
+inject();
+
+// Initialise Google Analytics
+ReactGA.initialize('G-5RX50YTJPJ');
 
 const CLOUDINARY_CLOUD_NAME   = 'dfyjxhjce';
 const CLOUDINARY_UPLOAD_PRESET = 'rimviz_uploads';
@@ -326,18 +334,37 @@ export default function App() {
   const galleryGap         = isMobile ? '16px'      : isTablet ? '20px'      : '32px';
   const sliderHeight       = isMobile ? '220px'     : isTablet ? '260px'     : '320px';
 
+  // Track page views whenever the page state changes
+  useEffect(() => {
+    ReactGA.send({ hitType: 'pageview', page: `/${page}` });
+  }, [page]);
+
+  // Track form abandonment — opened form but left without paying
+  useEffect(() => {
+    if (!showForm) return;
+    const handleLeave = () => {
+      if (!sending) {
+        ReactGA.event({ category: 'Purchase', action: 'form_abandoned' });
+      }
+    };
+    window.addEventListener('beforeunload', handleLeave);
+    return () => window.removeEventListener('beforeunload', handleLeave);
+  }, [showForm, sending]);
+
   const scrollTo = (id) => {
     setMenuOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleStartNow = () => {
+    ReactGA.event({ category: 'CTA', action: 'clicked_start_now' });
     setShowForm(true);
     setMenuOpen(false);
     setTimeout(() => document.getElementById('order')?.scrollIntoView({ behavior: 'smooth' }), 100);
   };
 
   const goToForm = () => {
+    ReactGA.event({ category: 'CTA', action: 'clicked_order_yours' });
     setPage('home');
     setShowForm(true);
     setTimeout(() => document.getElementById('order')?.scrollIntoView({ behavior: 'smooth' }), 150);
@@ -356,6 +383,7 @@ export default function App() {
     const validationError = validateForm({ ...formData, rimImage, vehicleImage });
     if (validationError) { setFormError(validationError); return; }
 
+    ReactGA.event({ category: 'Purchase', action: 'payment_attempted' });
     setSending(true);
     try {
       setUploadStatus('Uploading rim image...');
