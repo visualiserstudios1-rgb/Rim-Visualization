@@ -1,0 +1,22 @@
+# ============================================================
+# .gitignore — files never committed to Git
+# ============================================================
+
+# Dependencies
+node_modules/
+
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+
+# Build output
+/build
+/dist
+
+# Misc
+.DS_Store
+*.log
+npm-debug.log*
