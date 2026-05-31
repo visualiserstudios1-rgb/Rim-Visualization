@@ -56,14 +56,7 @@ function validateForm({ name, email, rimInch, rimImage, vehicleImage }) {
 }
 
 // ── Admin Dashboard ───────────────────────────────────────────────────────────
-function AdminPage() {
-  const [password, setPassword]   = useState('');
-  const [authed, setAuthed]       = useState(false);
-  const [orders, setOrders]       = useState([]);
-  const [loading, setLoading]     = useState(false);
-  const [loginError, setLoginError] = useState('');
-  const [toast, setToast]         = useState('');
-  const { isMobile } = useScreenSize();
+function AdminPage({ isMobile }) {
 
   const showToast = (msg) => {
     setToast(msg);
@@ -509,8 +502,8 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
-  // Show admin dashboard if hash is #admin
-  if (isAdmin) return <AdminPage />;
+  // Show admin dashboard if hash is #admin — all hooks already called above
+  if (isAdmin) return <AdminPage isMobile={isMobile} />;
 
   const heroFontSize       = isMobile ? '36px'      : isTablet ? '52px'      : '72px';
   const heroSubFontSize    = isMobile ? '15px'      : isTablet ? '18px'      : '22px';
