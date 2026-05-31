@@ -57,6 +57,12 @@ function validateForm({ name, email, rimInch, rimImage, vehicleImage }) {
 
 // ── Admin Dashboard ───────────────────────────────────────────────────────────
 function AdminPage({ isMobile }) {
+  const [password, setPassword]     = useState('');
+  const [authed, setAuthed]         = useState(false);
+  const [orders, setOrders]         = useState([]);
+  const [loading, setLoading]       = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [toast, setToast]           = useState('');
 
   const showToast = (msg) => {
     setToast(msg);
@@ -502,6 +508,24 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
+  // Track page views whenever the page state changes
+  useEffect(() => {
+    if (isAdmin) return;
+    ReactGA.send({ hitType: 'pageview', page: `/${page}` });
+  }, [page, isAdmin]);
+
+  // Track form abandonment — opened form but left without paying
+  useEffect(() => {
+    if (!showForm || isAdmin) return;
+    const handleLeave = () => {
+      if (!sending) {
+        ReactGA.event({ category: 'Purchase', action: 'form_abandoned' });
+      }
+    };
+    window.addEventListener('beforeunload', handleLeave);
+    return () => window.removeEventListener('beforeunload', handleLeave);
+  }, [showForm, sending, isAdmin]);
+
   // Show admin dashboard if hash is #admin — all hooks already called above
   if (isAdmin) return <AdminPage isMobile={isMobile} />;
 
@@ -514,23 +538,6 @@ export default function App() {
   const galleryImageHeight = isMobile ? '200px'     : isTablet ? '280px'     : '400px';
   const galleryGap         = isMobile ? '16px'      : isTablet ? '20px'      : '32px';
   const sliderHeight       = isMobile ? '220px'     : isTablet ? '260px'     : '320px';
-
-  // Track page views whenever the page state changes
-  useEffect(() => {
-    ReactGA.send({ hitType: 'pageview', page: `/${page}` });
-  }, [page]);
-
-  // Track form abandonment — opened form but left without paying
-  useEffect(() => {
-    if (!showForm) return;
-    const handleLeave = () => {
-      if (!sending) {
-        ReactGA.event({ category: 'Purchase', action: 'form_abandoned' });
-      }
-    };
-    window.addEventListener('beforeunload', handleLeave);
-    return () => window.removeEventListener('beforeunload', handleLeave);
-  }, [showForm, sending]);
 
   const scrollTo = (id) => {
     setMenuOpen(false);
