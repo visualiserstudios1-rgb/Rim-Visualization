@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RimViz Admin</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f7; min-height: 100vh; }
+
+    nav {
+      background: #000;
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    nav span { color: white; font-size: 18px; font-weight: 300; letter-spacing: -0.5px; }
+    nav span b { font-weight: 700; }
+    nav small { color: rgba(255,255,255,0.4); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* Login */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .login-card {
+      background: white;
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .login-card h1 { font-size: 24px; font-weight: 700; color: #1d1d1f; margin-bottom: 8px; }
+    .login-card p { font-size: 15px; color: #6b7280; margin-bottom: 32px; }
+    .login-card input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 16px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    .login-card input:focus { border-color: #000; }
+    .btn-black {
+      width: 100%;
+      padding: 14px;
+      border-radius: 9999px;
+      background: black;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-black:hover { opacity: 0.85; }
+    .error-msg { color: #dc2626; font-size: 14px; margin-top: 12px; }
+
+    /* Dashboard */
+    .dashboard { display: none; padding: 32px 24px; max-width: 1100px; margin: 0 auto; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px 24px;
+      border: 1px solid #e5e7eb;
+    }
+    .stat-card p { font-size: 13px; color: #6b7280; margin-bottom: 6px; }
+    .stat-card h2 { font-size: 32px; font-weight: 700; color: #1d1d1f; }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1d1d1f;
+      margin-bottom: 16px;
+    }
+
+    .order-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .order-id { font-size: 13px; color: #6b7280; margin-bottom: 4px; }
+    .order-name { font-size: 17px; font-weight: 600; color: #1d1d1f; }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .status-received  { background: #fef3c7; color: #92400e; }
+    .status-in_progress { background: #dbeafe; color: #1e40af; }
+    .status-delivered { background: #d1fae5; color: #065f46; }
+
+    .order-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .detail-item p { font-size: 12px; color: #9ca3af; margin-bottom: 2px; }
+    .detail-item strong { font-size: 14px; color: #1d1d1f; }
+
+    .order-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .btn-status {
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1.5px solid #e5e7eb;
+      background: white;
+      cursor: pointer;
+      color: #374151;
+    }
+    .btn-status:hover { border-color: #000; color: #000; }
+    .btn-status.active { background: #000; color: white; border-color: #000; }
+    .btn-status:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-img {
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      background: #f3f4f6;
+      color: #374151;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-img:hover { background: #e5e7eb; }
+
+    .loading { text-align: center; padding: 60px; color: #6b7280; font-size: 16px; }
+    .empty { text-align: center; padding: 60px; color: #9ca3af; font-size: 16px; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #000;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 999;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+
+    @media (max-width: 480px) {
+      .dashboard { padding: 20px 16px; }
+      .login-card { padding: 36px 24px; }
+      .order-header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span>Rim<b>Viz</b></span>
+  <small>Admin</small>
+</nav>
+
+<!-- Login Screen -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <h1>Admin Login</h1>
+    <p>Enter your password to access the dashboard</p>
+    <input type="password" id="passwordInput" placeholder="Password" onkeydown="if(event.key==='Enter') login()" />
+    <button class="btn-black" onclick="login()">Sign In</button>
+    <p class="error-msg" id="loginError"></p>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <p>Total Orders</p>
+      <h2 id="statTotal">0</h2>
+    </div>
+    <div class="stat-card">
+      <p>Pending</p>
+      <h2 id="statPending" style="color:#d97706;">0</h2>
+    </div>
+    <div class="stat-card">
+      <p>In Progress</p>
+      <h2 id="statProgress" style="color:#2563eb;">0</h2>
+    </div>
+    <div class="stat-card">
+      <p>Delivered</p>
+      <h2 id="statDelivered" style="color:#059669;">0</h2>
+    </div>
+    <div class="stat-card">
+      <p>Total Revenue</p>
+      <h2 id="statRevenue" style="font-size:24px;">R0</h2>
+    </div>
+  </div>
+
+  <p class="section-title">All Orders</p>
+  <div id="ordersList"><div class="loading">Loading orders...</div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let adminPassword = '';
+  let allOrders = [];
+
+  function login() {
+    const input = document.getElementById('passwordInput').value;
+    if (!input) return;
+    adminPassword = input;
+    loadOrders();
+  }
+
+  async function loadOrders() {
+    try {
+      const res = await fetch(`/api/orders?password=${encodeURIComponent(adminPassword)}`);
+      if (res.status === 401) {
+        document.getElementById('loginError').textContent = 'Incorrect password. Try again.';
+        adminPassword = '';
+        return;
+      }
+      const data = await res.json();
+      allOrders = data.orders || [];
+
+      // Show dashboard
+      document.getElementById('loginWrap').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+
+      updateStats();
+      renderOrders();
+
+    } catch (err) {
+      document.getElementById('loginError').textContent = 'Something went wrong. Try again.';
+    }
+  }
+
+  function updateStats() {
+    const total     = allOrders.length;
+    const pending   = allOrders.filter(o => o.status === 'received').length;
+    const progress  = allOrders.filter(o => o.status === 'in_progress').length;
+    const delivered = allOrders.filter(o => o.status === 'delivered').length;
+    const revenue   = allOrders.reduce((sum, o) => sum + parseFloat(o.amount || 0), 0);
+
+    document.getElementById('statTotal').textContent     = total;
+    document.getElementById('statPending').textContent   = pending;
+    document.getElementById('statProgress').textContent  = progress;
+    document.getElementById('statDelivered').textContent = delivered;
+    document.getElementById('statRevenue').textContent   = `R${revenue.toFixed(2)}`;
+  }
+
+  function renderOrders() {
+    const list = document.getElementById('ordersList');
+    if (allOrders.length === 0) {
+      list.innerHTML = '<div class="empty">No orders yet. They will appear here once customers pay.</div>';
+      return;
+    }
+
+    list.innerHTML = allOrders.map(order => `
+      <div class="order-card" id="card-${order.orderId}">
+        <div class="order-header">
+          <div>
+            <p class="order-id">${order.orderId}</p>
+            <p class="order-name">${order.customerName}</p>
+          </div>
+          <span class="status-badge status-${order.status}" id="badge-${order.orderId}">
+            ${order.status === 'received' ? 'Received' : order.status === 'in_progress' ? 'In Progress' : 'Delivered'}
+          </span>
+        </div>
+
+        <div class="order-details">
+          <div class="detail-item">
+            <p>Email</p>
+            <strong>${order.customerEmail}</strong>
+          </div>
+          <div class="detail-item">
+            <p>Phone</p>
+            <strong>${order.customerPhone || 'N/A'}</strong>
+          </div>
+          <div class="detail-item">
+            <p>Rim Size</p>
+            <strong>${order.rimSize}"</strong>
+          </div>
+          <div class="detail-item">
+            <p>Amount</p>
+            <strong>R${order.amount}</strong>
+          </div>
+          <div class="detail-item">
+            <p>Date</p>
+            <strong>${order.orderDate}</strong>
+          </div>
+        </div>
+
+        <div class="order-actions">
+          <button class="btn-status ${order.status === 'received' ? 'active' : ''}"
+            onclick="updateStatus('${order.orderId}', 'received')" id="btn-received-${order.orderId}">
+            Received
+          </button>
+          <button class="btn-status ${order.status === 'in_progress' ? 'active' : ''}"
+            onclick="updateStatus('${order.orderId}', 'in_progress')" id="btn-in_progress-${order.orderId}">
+            In Progress
+          </button>
+          <button class="btn-status ${order.status === 'delivered' ? 'active' : ''}"
+            onclick="updateStatus('${order.orderId}', 'delivered')" id="btn-delivered-${order.orderId}">
+            Delivered
+          </button>
+          ${order.rimImageUrl ? `<a href="${order.rimImageUrl}" target="_blank" class="btn-img">Rim Image</a>` : ''}
+          ${order.vehicleImageUrl ? `<a href="${order.vehicleImageUrl}" target="_blank" class="btn-img">Car Image</a>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function updateStatus(orderId, status) {
+    // Disable all buttons on that card
+    ['received','in_progress','delivered'].forEach(s => {
+      const btn = document.getElementById(`btn-${s}-${orderId}`);
+      if (btn) btn.disabled = true;
+    });
+
+    try {
+      const res = await fetch('/api/update-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminPassword, orderId, status }),
+      });
+
+      if (!res.ok) throw new Error('Failed');
+
+      // Update local data
+      const order = allOrders.find(o => o.orderId === orderId);
+      if (order) order.status = status;
+
+      // Update badge
+      const badge = document.getElementById(`badge-${orderId}`);
+      if (badge) {
+        badge.className = `status-badge status-${status}`;
+        badge.textContent = status === 'received' ? 'Received' : status === 'in_progress' ? 'In Progress' : 'Delivered';
+      }
+
+      // Update active button
+      ['received','in_progress','delivered'].forEach(s => {
+        const btn = document.getElementById(`btn-${s}-${orderId}`);
+        if (btn) {
+          btn.disabled = false;
+          btn.className = `btn-status ${s === status ? 'active' : ''}`;
+        }
+      });
+
+      updateStats();
+      showToast(status === 'delivered' ? '✓ Marked as delivered — customer emailed' : '✓ Status updated');
+
+    } catch (err) {
+      showToast('Failed to update. Try again.');
+      ['received','in_progress','delivered'].forEach(s => {
+        const btn = document.getElementById(`btn-${s}-${orderId}`);
+        if (btn) btn.disabled = false;
+      });
+    }
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
