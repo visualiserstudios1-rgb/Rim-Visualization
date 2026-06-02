@@ -8,6 +8,58 @@ const redis = new Redis({
   token: process.env.KV_REST_API_TOKEN,
 });
 
+// ── Schedule Cloudinary image deletion after 25 days ─────────────────────────
+async function scheduleCloudinaryDelete(imageUrl) {
+  try {
+    if (!imageUrl) return;
+
+    // Extract public_id from Cloudinary URL
+    // URL format: https://res.cloudinary.com/CLOUD/image/upload/v123456/public_id.ext
+    const matches = imageUrl.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+    if (!matches) return;
+
+    const publicId = matches[1];
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'dfyjxhjce';
+    const apiKey    = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!apiKey || !apiSecret) return;
+
+    // Delete after 15 days (in seconds)
+    const deleteAt = Math.floor(Date.now() / 1000) + (15 * 24 * 60 * 60);
+
+    // Use Cloudinary's explicit API to tag for future deletion
+    const timestamp = Math.floor(Date.now() / 1000);
+    const str = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
+    const signature = require('crypto').createHash('sha256').update(str).digest('hex');
+
+    await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/explicit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        public_id: publicId,
+        type: 'upload',
+        invalidate: true,
+        tags: [`delete_after_15_days`, `order_image`],
+        api_key: apiKey,
+        timestamp,
+        signature,
+      }),
+    });
+
+    // Store delete job in Redis — a cleanup function can process these
+    await redis.zadd('pending_deletes', {
+      score: deleteAt,
+      member: JSON.stringify({ publicId, cloudName }),
+    });
+
+  } catch (err) {
+    // Never block order processing if this fails
+    console.error('Schedule delete error:', err);
+  }
+}
+
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
@@ -65,6 +117,10 @@ module.exports = async function handler(req, res) {
 
     // Add to orders list (sorted by timestamp)
     await redis.zadd('orders', { score: timestamp, member: orderId });
+
+    // Schedule image deletion after 25 days
+    await scheduleCloudinaryDelete(rimImageUrl);
+    await scheduleCloudinaryDelete(vehicleImageUrl);
 
     // ── 5. Send confirmation email to CUSTOMER ────────────────────────────────
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
