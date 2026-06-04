@@ -14,7 +14,7 @@ import { ThreeDPage } from './pages/ThreeDPage';
 
 inject();
 ReactGA.initialize('G-5RX50YTJPJ');
-
+ReactPixel.init('1539732854496459');
 export default function App() {
   const { isMobile, isTablet } = useScreenSize();
   const [page, setPage]             = useState('home');
