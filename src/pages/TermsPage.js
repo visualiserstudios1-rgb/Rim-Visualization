@@ -19,7 +19,7 @@ const SECTIONS = [
   { title: '12. Contact', content: `For any questions regarding these Terms and Conditions, please contact us at visualiserstudios1@gmail.com. We aim to respond within 24 hours.` },
 ];
 
-export function TermsPage({ isMobile, isTablet, page, setPage, menuOpen, setMenuOpen, searchOpen, setSearchOpen, searchText, setSearchText, scrollTo, handleStartNow }) {
+export function TermsPage({ isMobile, isTablet, setPage, menuOpen, setMenuOpen, searchOpen, setSearchOpen, searchText, setSearchText, scrollTo, handleStartNow }) {
   const sectionPadding = isMobile ? '40px 16px' : isTablet ? '60px 32px' : '80px 24px';
 
   const onSelect      = (target) => { target.action(); setSearchOpen(false); setSearchText(''); };
