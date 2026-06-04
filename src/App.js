@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { inject } from '@vercel/analytics';
 import ReactGA from 'react-ga4';
-
+import ReactPixel from 'react-facebook-pixel';
 import { useScreenSize } from './hooks/useScreenSize';
 import { SkeletonStyles } from './components/NavBar';
 import { AdminPage } from './pages/AdminPage';
