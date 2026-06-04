@@ -20,7 +20,6 @@ const SECTIONS = [
 ];
 
 export function TermsPage({ isMobile, isTablet, page, setPage, menuOpen, setMenuOpen, searchOpen, setSearchOpen, searchText, setSearchText, scrollTo, handleStartNow }) {
-  const bodyFontSize   = isMobile ? '15px' : isTablet ? '16px' : '18px';
   const sectionPadding = isMobile ? '40px 16px' : isTablet ? '60px 32px' : '80px 24px';
 
   const onSelect      = (target) => { target.action(); setSearchOpen(false); setSearchText(''); };
