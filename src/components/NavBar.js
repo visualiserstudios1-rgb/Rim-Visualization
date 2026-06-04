@@ -1,6 +1,5 @@
 // src/components/NavBar.js
 
-import { useState } from 'react';
 import { IconSearch, IconMenu, IconChevronRight } from './icons';
 
 const skeletonCSS = `
@@ -26,7 +25,7 @@ export function SkeletonStyles() {
   return <style>{skeletonCSS}</style>;
 }
 
-export function NavBar({ isMobile, onHome, onSearch, onMenu, searchOpen, menuOpen }) {
+export function NavBar({ isMobile, onHome, onSearch, onMenu }) {
   return (
     <nav style={{ position: 'fixed', width: '100%', zIndex: 100, top: 0, backgroundColor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(20px)', borderBottom: '1px solid #d2d2d7', boxSizing: 'border-box' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
