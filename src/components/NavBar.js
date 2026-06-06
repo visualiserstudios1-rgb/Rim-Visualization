@@ -29,7 +29,7 @@ export function NavBar({ isMobile, onHome, onSearch, onMenu }) {
   return (
     <nav style={{ position: 'fixed', width: '100%', zIndex: 100, top: 0, backgroundColor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(20px)', borderBottom: '1px solid #d2d2d7', boxSizing: 'border-box' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div onClick={onHome} style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: '300', color: '#1d1d1f', cursor: 'pointer', letterSpacing: '-0.5px' }}>RimViz</div>
+        <div onClick={onHome} style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: '300', color: '#1d1d1f', cursor: 'pointer', letterSpacing: '-0.5px' }}>Rim Visualiser</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <button onClick={onSearch} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}>
             <IconSearch size={18} color="#1d1d1f" />
@@ -72,7 +72,7 @@ export function SearchBar({ searchText, setSearchText, searchTargets, onSelect, 
         <IconSearch size={18} color="#333" />
         <input autoFocus type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && results.length > 0) onSelect(results[0]); if (e.key === 'Escape') onClose(); }}
-          placeholder="Search rimviz.com"
+          placeholder="Search Rim Visualizer.com"
           style={{ flex: 1, border: 'none', outline: 'none', fontSize: '17px', background: 'transparent', color: '#333', fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif' }} />
         <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '15px', color: '#0071e3', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
       </div>
