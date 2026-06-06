@@ -195,11 +195,11 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
       {/* About */}
       <section id="about" style={{ padding: sectionPadding, backgroundColor: 'white' }}>
         <div style={{ maxWidth: '768px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '24px' }}>About RimViz</h2>
-          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>RimViz is a South African visualisation company pioneering a new standard in automotive customisation. We give drivers the power to see their dream rims on their vehicle before committing to a purchase — eliminating guesswork and inspiring confidence.</p>
+          <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '24px' }}>About Rim-Visualizer</h2>
+          <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>Rim-Visualizer is a South African visualisation company pioneering a new standard in automotive customisation. We give drivers the power to see their dream rims on their vehicle before committing to a purchase — eliminating guesswork and inspiring confidence.</p>
           <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginTop: '16px' }}>Simple process. Professional results. Complete clarity.</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginTop: '48px', flexWrap: 'wrap' }}>
-            {[{ value: '24h', label: 'Turnaround Time' }, { value: '100%', label: 'Satisfaction Focus' }, { value: 'ZA', label: 'Nationwide Service' }].map((stat, i) => (
+            {[{ value: '2h', label: 'Turnaround Time' }, { value: '99.9%', label: 'Satisfaction Focus' }, { value: 'SA ', label: 'Worldwide Service' }].map((stat, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: '36px', fontWeight: '700', color: 'black', margin: 0 }}>{stat.value}</p>
                 <p style={{ fontSize: '14px', color: '#6b7280', fontWeight: '400', marginTop: '4px' }}>{stat.label}</p>
@@ -215,12 +215,12 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
           <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '24px' }}>Support</h2>
           <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginBottom: '40px' }}>Have questions? We are here to help you every step of the way.</p>
           {[
-            { q: 'How does RimViz work?', a: 'Simply fill in your details, upload a photo of your rim and your vehicle, and submit. Our team will create a professional visualisation showing exactly how your chosen rims will look on your car.' },
+            { q: 'How does Rim-Visualizer work?', a: 'Simply fill in your details, upload a photo of your rim and your vehicle, and submit. Our team will create a professional visualisation showing exactly how your chosen rims will look on your car.' },
             { q: 'How long does a visualisation take?', a: 'Most visualisations are delivered within 24 to 48 hours. We will contact you directly at the email address you provided.' },
             { q: 'What image formats are accepted?', a: 'We accept JPG and PNG images only. Make sure your photos are clear and well lit for the best results.' },
             { q: 'What rim sizes do you support?', a: 'We currently support rim sizes from 17 to 23 inches.' },
             { q: 'Is there a cost for the visualisation?', a: 'Our visualisation service is priced at R49.99 per request.' },
-            { q: 'How do I contact RimViz?', a: 'You can reach us at visualiserstudios1@gmail.com. We typically respond within 24 hours.' },
+            { q: 'How do I contact Rim-Visualizer?', a: 'You can reach us at visualiserstudios1@gmail.com. We typically respond within 24 hours.' },
           ].map((item, i) => (
             <div key={i} style={{ marginBottom: '12px', textAlign: 'left', backgroundColor: 'white', borderRadius: '12px', padding: '24px 28px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #f0f0f0' }}>
               <p style={{ fontSize: bodyFontSize, fontWeight: '600', color: '#1d1d1f', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -255,7 +255,7 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
             </button>
             <a href="mailto:visualiserstudios1@gmail.com" style={{ color: '#9ca3af', fontSize: isMobile ? '13px' : '14px', textDecoration: 'underline' }}>Contact</a>
           </div>
-          <p style={{ color: '#6b7280', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2025 RimViz. All rights reserved.</p>
+          <p style={{ color: '#6b7280', fontSize: isMobile ? '13px' : '14px' }}>Copyright © 2025 Rim-Visualizer. All rights reserved.</p>
         </div>
       </footer>
     </div>
