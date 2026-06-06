@@ -195,7 +195,7 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
       {/* About */}
       <section id="about" style={{ padding: sectionPadding, backgroundColor: 'white' }}>
         <div style={{ maxWidth: '768px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '24px' }}>About Rim visualizer</h2>
+          <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '24px' }}>About Rim Visualizer</h2>
           <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>Rim Visualizer is a South African visualisation company pioneering a new standard in automotive customisation. We give drivers the power to see their dream rims on their vehicle before committing to a purchase — eliminating guesswork and inspiring confidence.</p>
           <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginTop: '16px' }}>Simple process. Professional results. Complete clarity.</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginTop: '48px', flexWrap: 'wrap' }}>
