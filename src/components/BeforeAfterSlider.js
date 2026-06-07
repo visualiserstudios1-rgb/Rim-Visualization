@@ -51,11 +51,11 @@ export function BeforeAfterSlider({ before, after, alt, height }) {
       {!bothLoaded && <div className="skeleton" style={{ position: 'absolute', inset: 0, zIndex: 3 }} />}
 
       <img src={before} alt={`${alt} before`} onLoad={() => setBeforeLoaded(true)} draggable={false}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: bothLoaded ? 1 : 0, display: 'block' }} />
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom', opacity: bothLoaded ? 1 : 0, display: 'block' }} />
 
       <div style={{ position: 'absolute', inset: 0, width: `${pos}%`, overflow: 'hidden' }}>
         <img src={after} alt={`${alt} after`} onLoad={() => setAfterLoaded(true)} draggable={false}
-          style={{ position: 'absolute', inset: 0, width: containerRef.current ? `${containerRef.current.offsetWidth}px` : '100%', height: '100%', objectFit: 'cover', opacity: bothLoaded ? 1 : 0, display: 'block', maxWidth: 'none' }} />
+          style={{ position: 'absolute', inset: 0, width: containerRef.current ? `${containerRef.current.offsetWidth}px` : '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom', opacity: bothLoaded ? 1 : 0, display: 'block', maxWidth: 'none' }} />
       </div>
 
       {bothLoaded && (
