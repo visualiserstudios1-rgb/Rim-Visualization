@@ -180,10 +180,10 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
           <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: isMobile ? '24px' : '48px', textAlign: 'center' }}>Showcase Gallery</h2>
           <div style={{ display: 'grid', gridTemplateColumns: galleryColumns, gap: galleryGap }}>
             {[
-              { src: 'https://i.imgur.com/nsyAAcp.png', alt: 'Black rims' },
+              { src: 'https://i.imgur.com/uqinPfy.png', alt: 'Black rims' },
               { src: 'https://i.imgur.com/f2jT8fm.png', alt: 'Silver rims' },
               { src: 'https://i.imgur.com/fSkiCJy.png', alt: 'Chrome rims' },
-              { src: 'https://i.imgur.com/uqinPfy.png', alt: 'Performance wheels' },
+              { src: 'https://i.imgur.com/nsyAAcp.png', alt: 'Performance wheels' },
             ].map((img, i) => (
               <SkeletonImage key={i} src={img.src} alt={img.alt}
                 style={{ width: '100%', height: galleryImageHeight, objectFit: 'cover', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', display: 'block' }} />
@@ -216,7 +216,7 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
           <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginBottom: '40px' }}>Have questions? We are here to help you every step of the way.</p>
           {[
             { q: 'How does Rim-Visualizer work?', a: 'Simply fill in your details, upload a photo of your rim and your vehicle, and submit. Our team will create a professional visualisation showing exactly how your chosen rims will look on your car.' },
-            { q: 'How long does a visualisation take?', a: 'Most visualisations are delivered within 24 to 48 hours. We will contact you directly at the email address you provided.' },
+            { q: 'How long does a visualisation take?', a: 'Most visualisations are delivered within 30 min to 3 hours. We will contact you directly at the email address you provided.' },
             { q: 'What image formats are accepted?', a: 'We accept JPG and PNG images only. Make sure your photos are clear and well lit for the best results.' },
             { q: 'What rim sizes do you support?', a: 'We currently support rim sizes from 17 to 23 inches.' },
             { q: 'Is there a cost for the visualisation?', a: 'Our visualisation service is priced at R49.99 per request.' },
