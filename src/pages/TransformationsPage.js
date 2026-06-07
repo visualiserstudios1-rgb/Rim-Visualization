@@ -5,10 +5,10 @@ import { BeforeAfterSlider } from '../components/BeforeAfterSlider';
 import { buildMenuItems, buildSearchTargets } from './ThreeDPage';
 
 const PAIRS = [
-  { before: 'https://i.imgur.com/rQ33C2j.jpeg', after: 'https://i.imgur.com/uqinPfy.png',  car: 'Toyota Corolla Quest', rim: '16" Chrome',       objectPosition: 'center' },
-  { before: 'https://i.imgur.com/FHTJy5t.jpeg', after: 'https://i.imgur.com/f2jT8fm.png',  car: 'Toyota Auris',         rim: '16" Chrome',       objectPosition: 'center' },
-  { before: 'https://i.imgur.com/aXUEiWb.jpeg', after: 'https://i.imgur.com/Irra7Am.png',  car: 'Volkswagen Golf',      rim: '17" BBS BLK Face', objectPosition: 'center' },
-  { before: 'https://i.imgur.com/wGvD3qM.jpeg', after: 'https://i.imgur.com/IkjvnGX.png',  car: 'Suzuki Ertiga',        rim: '16" White Steel',  objectPosition: 'center' },
+  { before: 'https://i.imgur.com/rQ33C2j.jpeg', after: 'https://i.imgur.com/uqinPfy.png',  car: 'Toyota Corolla Quest', rim: '16" Chrome' },
+  { before: 'https://i.imgur.com/FHTJy5t.jpeg', after: 'https://i.imgur.com/f2jT8fm.png',  car: 'Toyota Auris',         rim: '16" Chrome' },
+  { before: 'https://i.imgur.com/aXUEiWb.jpeg', after: 'https://i.imgur.com/Irra7Am.png',  car: 'Volkswagen Golf',      rim: '17" BBS BLK Face' },
+  { before: 'https://i.imgur.com/wGvD3qM.jpeg', after: 'https://i.imgur.com/IkjvnGX.png',  car: 'Suzuki Ertiga',        rim: '16" White Steel' },
 ];
 
 export function TransformationsPage({ isMobile, isTablet, page, setPage, menuOpen, setMenuOpen, searchOpen, setSearchOpen, searchText, setSearchText, scrollTo, goToForm, handleStartNow }) {
@@ -43,7 +43,7 @@ export function TransformationsPage({ isMobile, isTablet, page, setPage, menuOpe
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: galleryGap }}>
             {PAIRS.map((p, i) => (
               <div key={i} style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.09)', border: '1px solid #ebebeb' }}>
-                <BeforeAfterSlider before={p.before} after={p.after} alt={p.car} height={sliderHeight} objectPosition={p.objectPosition} />
+                <BeforeAfterSlider before={p.before} after={p.after} alt={p.car} height={sliderHeight} />
                 <div style={{ padding: '16px 20px', backgroundColor: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <p style={{ fontWeight: '600', fontSize: '15px', color: '#1d1d1f', margin: '0 0 3px' }}>{p.car}</p>
