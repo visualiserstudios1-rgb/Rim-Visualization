@@ -180,9 +180,9 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
           <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: isMobile ? '24px' : '48px', textAlign: 'center' }}>Showcase Gallery</h2>
           <div style={{ display: 'grid', gridTemplateColumns: galleryColumns, gap: galleryGap }}>
             {[
-              { src: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80', alt: 'Black rims' },
+              { src: 'https://i.imgur.com/1LC2nrh.png', alt: 'Black rims' },
               { src: 'https://i.imgur.com/f2jT8fm.png', alt: 'Silver rims' },
-              { src: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=600&q=80', alt: 'Chrome rims' },
+              { src: 'https://i.imgur.com/fSkiCJy.png', alt: 'Chrome rims' },
               { src: 'https://i.imgur.com/uqinPfy.png', alt: 'Performance wheels' },
             ].map((img, i) => (
               <SkeletonImage key={i} src={img.src} alt={img.alt}
