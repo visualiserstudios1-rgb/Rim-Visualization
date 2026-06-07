@@ -15,7 +15,7 @@ export function TransformationsPage({ isMobile, isTablet, page, setPage, menuOpe
   const bodyFontSize   = isMobile ? '15px' : isTablet ? '16px' : '18px';
   const sectionPadding = isMobile ? '40px 16px' : isTablet ? '60px 32px' : '80px 24px';
   const galleryGap     = isMobile ? '16px' : isTablet ? '20px' : '32px';
-  const sliderHeight   = isMobile ? '220px' : isTablet ? '260px' : '320px';
+  const sliderHeight   = isMobile ? '300px' : isTablet ? '360px' : '420px';
 
   const onSelect = (target) => { target.action(); setSearchOpen(false); setSearchText(''); };
   const menuItems     = buildMenuItems({ setPage, setMenuOpen, handleStartNow, scrollTo });
