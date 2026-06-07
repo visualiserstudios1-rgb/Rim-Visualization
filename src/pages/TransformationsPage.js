@@ -6,7 +6,7 @@ import { buildMenuItems, buildSearchTargets } from './ThreeDPage';
 
 const PAIRS = [
   { before: 'https://i.imgur.com/rQ33C2j.jpeg', after: 'https://i.imgur.com/uqinPfy.png',  car: 'Toyota Corolla Quest', rim: '16" Chrome',       objectPosition: 'center' },
-  { before: 'https://i.imgur.com/FHTJy5t.jpeg', after: 'https://i.imgur.com/f2jT8fm.png',  car: 'Toyota Auris',         rim: '16" Chrome',       objectPosition: 'right center' },
+  { before: 'https://i.imgur.com/FHTJy5t.jpeg', after: 'https://i.imgur.com/f2jT8fm.png',  car: 'Toyota Auris',         rim: '16" Chrome',       objectPosition: 'center' },
   { before: 'https://i.imgur.com/aXUEiWb.jpeg', after: 'https://i.imgur.com/Irra7Am.png',  car: 'Volkswagen Golf',      rim: '17" BBS BLK Face', objectPosition: 'center' },
   { before: 'https://i.imgur.com/wGvD3qM.jpeg', after: 'https://i.imgur.com/IkjvnGX.png',  car: 'Suzuki Ertiga',        rim: '16" White Steel',  objectPosition: 'center' },
 ];
