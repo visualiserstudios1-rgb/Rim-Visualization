@@ -231,12 +231,12 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
               <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, margin: 0, paddingLeft: '34px' }}>{item.a}</p>
             </div>
           ))}
-          <div style={{ marginTop: '40px', backgroundColor: 'black', borderRadius: '16px', padding: '32px', textAlign: 'center' }}>
+          <div style={{ marginTop: '40px', backgroundColor: 'black', borderRadius: '16px', padding: isMobile ? '32px 20px' : '40px 32px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <p style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', marginBottom: '8px' }}>Still have questions?</p>
-            <p style={{ color: '#9ca3af', fontSize: bodyFontSize, fontWeight: '300', marginBottom: '16px' }}>We would love to hear from you.</p>
-            <a href="mailto:visualiserstudios1@gmail.com" style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', textDecoration: 'none', backgroundColor: '#1d1d1f', padding: '12px 28px', borderRadius: '9999px', border: '1px solid #ffffff33', display: 'inline-flex', alignItems: 'center', gap: '8px', maxWidth: '100%', wordBreak: 'break-all', margin: '0 auto' }}>
-              <IconMail size={16} color="white" />
-              visualiserstudios1@gmail.com
+            <p style={{ color: '#9ca3af', fontSize: bodyFontSize, fontWeight: '300', marginBottom: '24px' }}>We would love to hear from you.</p>
+            <a href="mailto:visualiserstudios1@gmail.com" style={{ color: 'white', fontSize: isMobile ? '14px' : bodyFontSize, fontWeight: '600', textDecoration: 'none', backgroundColor: '#1d1d1f', padding: isMobile ? '14px 20px' : '14px 32px', borderRadius: '9999px', border: '1px solid #ffffff33', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: isMobile ? '100%' : 'auto', boxSizing: 'border-box' }}>
+              <IconMail size={16} color="white" style={{ flexShrink: 0 }} />
+              <span>visualiserstudios1@gmail.com</span>
             </a>
           </div>
         </div>
