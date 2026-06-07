@@ -94,7 +94,8 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
 
       {/* Hero */}
       <section style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
-        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=80" alt="Premium car" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 60%' }} />
+        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=80" alt="Premium car"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center center' }} />
         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)' }} />
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: isMobile ? '0 20px' : '0 40px' }}>
           <h1 style={{ fontSize: heroFontSize, fontWeight: '300', color: 'white', marginBottom: '16px', lineHeight: 1.15, letterSpacing: isMobile ? '-0.5px' : '-2px' }}>
@@ -233,7 +234,7 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
           <div style={{ marginTop: '40px', backgroundColor: 'black', borderRadius: '16px', padding: '32px', textAlign: 'center' }}>
             <p style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', marginBottom: '8px' }}>Still have questions?</p>
             <p style={{ color: '#9ca3af', fontSize: bodyFontSize, fontWeight: '300', marginBottom: '16px' }}>We would love to hear from you.</p>
-            <a href="mailto:visualiserstudios1@gmail.com" style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', textDecoration: 'none', backgroundColor: '#1d1d1f', padding: '12px 28px', borderRadius: '9999px', border: '1px solid #ffffff33', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <a href="mailto:visualiserstudios1@gmail.com" style={{ color: 'white', fontSize: bodyFontSize, fontWeight: '600', textDecoration: 'none', backgroundColor: '#1d1d1f', padding: '12px 28px', borderRadius: '9999px', border: '1px solid #ffffff33', display: 'inline-flex', alignItems: 'center', gap: '8px', maxWidth: '100%', wordBreak: 'break-all' }}>
               <IconMail size={16} color="white" />
               visualiserstudios1@gmail.com
             </a>
