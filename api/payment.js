@@ -71,9 +71,9 @@ module.exports = async function handler(req, res) {
   const data = {
     merchant_id:      merchantId,
     merchant_key:     merchantKey,
-    return_url:       'https://rim-visualization.vercel.app/success',
-    cancel_url:       'https://rim-visualization.vercel.app',
-    notify_url:       'https://rim-visualization.vercel.app/api/notify',
+    return_url:       'https://www.rim-visualizer.com/success',
+    cancel_url:       'https://www.rim-visualizer.com',
+    notify_url:       'https://www.rim-visualizer.com/api/notify',
     name_first:       safeName.split(' ')[0],
     name_last:        safeName.split(' ').slice(1).join(' ') || '-',
     email_address:    safeEmail,
