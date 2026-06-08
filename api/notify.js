@@ -200,7 +200,7 @@ module.exports = async function handler(req, res) {
               </div>
               <div style="background: black; border-radius: 12px; padding: 16px; text-align: center;">
                 <p style="color: white; font-size: 15px; font-weight: 600; margin: 0 0 8px;">Complete this order within 24 hours</p>
-                <a href="https://rim-visualization.vercel.app/admin" style="color: rgba(255,255,255,0.7); font-size: 13px;">View in Admin Dashboard →</a>
+                <a href="https://www.rim-visualizer.com/admin" style="color: rgba(255,255,255,0.7); font-size: 13px;">View in Admin Dashboard →</a>
               </div>
             </div>
           </div>
