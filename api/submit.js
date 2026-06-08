@@ -48,7 +48,8 @@ module.exports = async function handler(req, res) {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
   const allowedOrigins = [
-    'https://rim-visualization.vercel.app',
+    'https://www.rim-visualizer.com',
+    'https://rim-visualizer.com',
     'http://localhost:3000',
   ];
   const origin = req.headers.origin;
