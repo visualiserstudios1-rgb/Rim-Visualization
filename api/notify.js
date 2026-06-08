@@ -132,7 +132,7 @@ module.exports = async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'RimViz <onboarding@resend.dev>',
+        from: 'RimViz <orders@rim-visualizer.com>',
         to: customerEmail,
         subject: `Your RimViz Order is Confirmed — ${orderId}`,
         html: `
@@ -157,7 +157,7 @@ module.exports = async function handler(req, res) {
                 <p style="color: white; font-size: 20px; font-weight: 700; margin: 0; letter-spacing: 1px;">${orderId}</p>
                 <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin: 8px 0 0;">Keep this for your records</p>
               </div>
-              <p style="color: #6b7280; font-size: 15px; line-height: 1.7;">Your visualisation will be delivered to <strong>${customerEmail}</strong> within 24 to 48 hours. Questions? Email us at <a href="mailto:visualiserstudios1@gmail.com" style="color: #1d1d1f;">visualiserstudios1@gmail.com</a></p>
+              <p style="color: #6b7280; font-size: 15px; line-height: 1.7;">Your visualisation will be delivered to <strong>${customerEmail}</strong> within 24 to 48 hours. Questions? Email us at <a href="mailto:orders@rim-visualizer.com" style="color: #1d1d1f;">orders@rim-visualizer.com</a></p>
             </div>
           </div>
         `,
@@ -172,7 +172,7 @@ module.exports = async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'RimViz Orders <onboarding@resend.dev>',
+        from: 'RimViz Orders <orders@rim-visualizer.com>',
         to: 'visualiserstudios1@gmail.com',
         subject: `🔔 New Order — ${orderId} — ${customerName}`,
         html: `
