@@ -26,7 +26,6 @@ module.exports = async function handler(req, res) {
     // Get existing order
     const raw = await redis.get(`order:${orderId}`);
     const order = typeof raw === 'string' ? JSON.parse(raw) : raw;
-
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
     // Update status
@@ -45,7 +44,7 @@ module.exports = async function handler(req, res) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'RimViz <onboarding@resend.dev>',
+          from: 'RimViz <orders@rim-visualizer.com>',
           to: order.customerEmail,
           subject: `Your RimViz Visualisation is Ready — ${orderId}`,
           html: `
@@ -64,7 +63,7 @@ module.exports = async function handler(req, res) {
                 </div>
                 <p style="color: #6b7280; font-size: 15px; line-height: 1.7;">
                   Not received it? Reply to this email or contact us at 
-                  <a href="mailto:visualiserstudios1@gmail.com" style="color: #1d1d1f; font-weight: 600;">visualiserstudios1@gmail.com</a>
+                  <a href="mailto:orders@rim-visualizer.com" style="color: #1d1d1f; font-weight: 600;">orders@rim-visualizer.com</a>
                 </p>
               </div>
             </div>
