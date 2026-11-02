@@ -9,6 +9,13 @@ const redis = new Redis({
   token: process.env.KV_REST_API_TOKEN,
 });
 
+// Price is decided HERE on the server, never by the browser
+const PACKAGES = {
+  1: { name: 'Starter',  amount: '24.99',  desc: '1 visualisation + 1 free modification' },
+  2: { name: 'Standard', amount: '49.99',  desc: '3 visualisations + 1 free modification' },
+  3: { name: 'Pro',      amount: '129.99', desc: '10 visualisations + 5 free modifications' },
+};
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
 
@@ -40,7 +47,7 @@ module.exports = async function handler(req, res) {
   }
 
   // ── Validate fields ───────────────────────────────────────────────────────
-  const { name, email, phone, rimSize, rimImageUrl, vehicleImageUrl } = req.body;
+  const { name, email, phone, rimSize, rimImageUrl, vehicleImageUrl, packageId } = req.body;
 
   if (!name || !email || !rimSize) {
     return res.status(400).json({ error: 'Missing required fields.' });
@@ -63,6 +70,12 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid rim size.' });
   }
 
+  // ── Package ───────────────────────────────────────────────────────────────
+  const pkg = PACKAGES[Number(packageId)];
+  if (!pkg) {
+    return res.status(400).json({ error: 'Invalid package.' });
+  }
+
   // ── Build PayFast payment ─────────────────────────────────────────────────
   const merchantId  = process.env.PAYFAST_MERCHANT_ID;
   const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
@@ -78,9 +91,10 @@ module.exports = async function handler(req, res) {
     name_last:        safeName.split(' ').slice(1).join(' ') || '-',
     email_address:    safeEmail,
     m_payment_id:     `RIMVIZ-${Date.now()}`,
-    amount:           '49.99',
-    item_name:        'RimViz Visualisation Service',
-    item_description: `Rim visualisation for ${safeName} - ${safeRimSize} inch rims`,
+    amount:           pkg.amount,
+    item_name:        `RimViz ${pkg.name} Package`,
+    item_description: `${pkg.desc} - ${safeRimSize} inch rims`,
+    custom_int1:      String(Number(packageId)),
     custom_str1:      safeEmail,
     custom_str2:      safePhone,
     custom_str3:      safeRimSize,
