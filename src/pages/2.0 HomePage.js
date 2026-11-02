@@ -5,6 +5,7 @@ import ReactGA from 'react-ga4';
 import { NavBar, DropdownMenu, SearchBar } from '../components/NavBar';
 import { SkeletonImage } from '../components/SkeletonImage';
 import { IconAlert, IconCheck, IconLoader, IconLock, IconMail } from '../components/icons';
+import PackageSelector, { PACKAGES } from '../components/PackageSelector';
 import { uploadToCloudinary, validateForm } from '../utils/cloudinary';
 import { buildMenuItems, buildSearchTargets } from './ThreeDPage';
 
@@ -15,6 +16,9 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
   const [sending, setSending]           = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [formError, setFormError]       = useState('');
+  const [packageId, setPackageId]       = useState(2);
+
+  const selectedPackage = PACKAGES.find((p) => p.id === packageId) || PACKAGES[1];
 
   const heroFontSize       = isMobile ? '36px'      : isTablet ? '52px'      : '72px';
   const heroSubFontSize    = isMobile ? '15px'      : isTablet ? '18px'      : '22px';
@@ -60,7 +64,7 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
       const response = await fetch('/api/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: formData.name.trim(), email: formData.email.trim(), phone: formData.phone.trim(), rimSize: formData.rimInch, rimImageUrl, vehicleImageUrl }),
+        body: JSON.stringify({ name: formData.name.trim(), email: formData.email.trim(), phone: formData.phone.trim(), rimSize: formData.rimInch, rimImageUrl, vehicleImageUrl, packageId }),
       });
 
       const result = await response.json();
@@ -109,9 +113,9 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
       {/* Order Form */}
       {showForm && (
         <section id="order" style={{ padding: sectionPadding, backgroundColor: 'white' }}>
-          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
             <h2 style={{ fontSize: headingFontSize, fontWeight: '300', color: 'black', marginBottom: '16px', textAlign: 'center' }}>Get Your Visualization</h2>
-            <p style={{ fontSize: bodyFontSize, color: '#6b7280', textAlign: 'center', marginBottom: '40px' }}>Fill in your details and upload your images.</p>
+            <p style={{ fontSize: bodyFontSize, color: '#6b7280', textAlign: 'center', marginBottom: '40px' }}>Choose a package, fill in your details and upload your images.</p>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {formError && (
                 <div style={{ padding: '12px 16px', backgroundColor: '#fef2f2', borderRadius: '8px', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -119,57 +123,63 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
                   <p style={{ color: '#dc2626', fontSize: '14px', margin: 0 }}>{formError}</p>
                 </div>
               )}
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Full Name *</label>
-                <input type="text" placeholder="John Doe" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} maxLength={100}
-                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Email Address *</label>
-                <input type="email" placeholder="you@example.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} maxLength={200}
-                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Phone Number (Optional)</label>
-                <input type="tel" placeholder="+27 123 456 789" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} maxLength={20}
-                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Desired Rim Size *</label>
-                <select value={formData.rimInch} onChange={(e) => setFormData({ ...formData, rimInch: e.target.value })}
-                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }}>
-                  <option value="">Select rim size</option>
-                  {['17','18','19','20','21','22','23'].map(s => <option key={s} value={s}>{s} inches</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Rim Image *</label>
-                <input type="file" accept="image/jpeg,image/png,image/jpg" onChange={(e) => setRimImage(e.target.files[0])}
-                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', boxSizing: 'border-box' }} />
-                {rimImage && <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}><IconCheck size={14} color="#16a34a" /> {rimImage.name}</p>}
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Your Car Image *</label>
-                <input type="file" accept="image/jpeg,image/png,image/jpg" onChange={(e) => setVehicleImage(e.target.files[0])}
-                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', boxSizing: 'border-box' }} />
-                {vehicleImage && <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}><IconCheck size={14} color="#16a34a" /> {vehicleImage.name}</p>}
-              </div>
-              {sending && uploadStatus && (
-                <div style={{ textAlign: 'center', padding: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <IconLoader size={15} color="#0284c7" />
-                  <p style={{ color: '#0284c7', fontSize: '14px', margin: 0 }}>{uploadStatus}</p>
+
+              {/* Package selection */}
+              <PackageSelector selected={packageId} onSelect={setPackageId} />
+
+              <div style={{ maxWidth: '600px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Full Name *</label>
+                  <input type="text" placeholder="John Doe" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} maxLength={100}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
-              )}
-              <div style={{ backgroundColor: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb', textAlign: 'center' }}>
-                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 4px 0' }}>Total amount due</p>
-                <p style={{ fontSize: '28px', fontWeight: '700', color: 'black', margin: 0 }}>R49.99</p>
-                <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>Secure payment via PayFast — Card &amp; EFT accepted</p>
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Email Address *</label>
+                  <input type="email" placeholder="you@example.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} maxLength={200}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Phone Number (Optional)</label>
+                  <input type="tel" placeholder="+27 123 456 789" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} maxLength={20}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Desired Rim Size *</label>
+                  <select value={formData.rimInch} onChange={(e) => setFormData({ ...formData, rimInch: e.target.value })}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }}>
+                    <option value="">Select rim size</option>
+                    {['17','18','19','20','21','22','23'].map(s => <option key={s} value={s}>{s} inches</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Rim Image *</label>
+                  <input type="file" accept="image/jpeg,image/png,image/jpg" onChange={(e) => setRimImage(e.target.files[0])}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', boxSizing: 'border-box' }} />
+                  {rimImage && <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}><IconCheck size={14} color="#16a34a" /> {rimImage.name}</p>}
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Your Car Image *</label>
+                  <input type="file" accept="image/jpeg,image/png,image/jpg" onChange={(e) => setVehicleImage(e.target.files[0])}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', boxSizing: 'border-box' }} />
+                  {vehicleImage && <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}><IconCheck size={14} color="#16a34a" /> {vehicleImage.name}</p>}
+                </div>
+                {sending && uploadStatus && (
+                  <div style={{ textAlign: 'center', padding: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <IconLoader size={15} color="#0284c7" />
+                    <p style={{ color: '#0284c7', fontSize: '14px', margin: 0 }}>{uploadStatus}</p>
+                  </div>
+                )}
+                <div style={{ backgroundColor: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb', textAlign: 'center' }}>
+                  <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 4px 0' }}>Total amount due ({selectedPackage.name} package)</p>
+                  <p style={{ fontSize: '28px', fontWeight: '700', color: 'black', margin: 0 }}>R{selectedPackage.price}</p>
+                  <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>Secure payment via PayFast — Card &amp; EFT accepted</p>
+                </div>
+                <button type="submit" disabled={sending}
+                  style={{ width: '100%', padding: '16px', borderRadius: '9999px', backgroundColor: sending ? '#666' : 'black', color: 'white', fontSize: '16px', fontWeight: '600', border: 'none', cursor: sending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <IconLock size={15} color="white" />
+                  {sending ? 'Processing...' : `Pay R${selectedPackage.price} & Submit`}
+                </button>
               </div>
-              <button type="submit" disabled={sending}
-                style={{ width: '100%', padding: '16px', borderRadius: '9999px', backgroundColor: sending ? '#666' : 'black', color: 'white', fontSize: '16px', fontWeight: '600', border: 'none', cursor: sending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <IconLock size={15} color="white" />
-                {sending ? 'Processing...' : 'Pay R49.99 & Submit'}
-              </button>
             </form>
           </div>
         </section>
@@ -220,7 +230,7 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
             { q: 'How long does a visualisation take?', a: 'Most visualisations are delivered within 30 min to 3 hours. We will contact you directly at the email address you provided.' },
             { q: 'What image formats are accepted?', a: 'We accept JPG and PNG images only. Make sure your photos are clear and well lit for the best results.' },
             { q: 'What rim sizes do you support?', a: 'We currently support rim sizes from 17 to 23 inches.' },
-            { q: 'Is there a cost for the visualisation?', a: 'Our visualisation service is priced at R49.99 per request.' },
+            { q: 'Is there a cost for the visualisation?', a: 'We offer three packages. Starter (R24.99) includes 1 visualisation and 1 free modification. Standard (R49.99) includes 3 visualisations and 1 free modification. Pro (R129.99) includes 10 visualisations and 5 free modifications.' },
             { q: 'How do I contact Rim-Visualizer?', a: 'You can reach us at visualiserstudios1@gmail.com. We typically respond within 24 hours.' },
           ].map((item, i) => (
             <div key={i} style={{ marginBottom: '12px', textAlign: 'left', backgroundColor: 'white', borderRadius: '12px', padding: '24px 28px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #f0f0f0' }}>
