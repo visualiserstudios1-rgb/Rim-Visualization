@@ -8,6 +8,9 @@ const redis = new Redis({
   token: process.env.KV_REST_API_TOKEN,
 });
 
+// Expected price per package (must match api/payment.js)
+const PACKAGE_PRICES = { '1': 24.99, '2': 49.99, '3': 129.99 };
+
 // ── Schedule Cloudinary image deletion after 25 days ─────────────────────────
 async function scheduleCloudinaryDelete(imageUrl) {
   try {
@@ -94,6 +97,15 @@ module.exports = async function handler(req, res) {
     const customerName    = `${data.name_first} ${data.name_last}`.trim();
     const orderId         = data.m_payment_id;
     const amount          = data.amount_gross;
+    const packageId       = String(data.custom_int1 || '');
+    const packageName     = data.item_name || 'Unknown package';
+
+    // Safety check: the amount paid must match the package that was ordered
+    if (packageId && PACKAGE_PRICES[packageId] !== undefined &&
+        Math.abs(parseFloat(amount) - PACKAGE_PRICES[packageId]) > 0.01) {
+      console.error(`Amount mismatch for ${data.m_payment_id}: paid ${amount}, expected ${PACKAGE_PRICES[packageId]}`);
+      return res.status(200).end();
+    }
     const orderDate       = new Date().toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' });
     const timestamp       = Date.now();
 
@@ -104,6 +116,8 @@ module.exports = async function handler(req, res) {
       customerEmail,
       customerPhone,
       rimSize,
+      packageId,
+      packageName,
       amount,
       orderDate,
       timestamp,
@@ -147,6 +161,7 @@ module.exports = async function handler(req, res) {
                 <h3 style="font-size: 14px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px;">Order Summary</h3>
                 <table style="width: 100%; border-collapse: collapse;">
                   <tr><td style="padding: 8px 0; color: #6b7280; font-size: 15px;">Order ID</td><td style="padding: 8px 0; color: #1d1d1f; font-size: 15px; font-weight: 600; text-align: right;">${orderId}</td></tr>
+                  <tr style="border-top: 1px solid #e5e7eb;"><td style="padding: 8px 0; color: #6b7280; font-size: 15px;">Package</td><td style="padding: 8px 0; color: #1d1d1f; font-size: 15px; font-weight: 600; text-align: right;">${packageName}</td></tr>
                   <tr style="border-top: 1px solid #e5e7eb;"><td style="padding: 8px 0; color: #6b7280; font-size: 15px;">Rim Size</td><td style="padding: 8px 0; color: #1d1d1f; font-size: 15px; font-weight: 600; text-align: right;">${rimSize} inches</td></tr>
                   <tr style="border-top: 1px solid #e5e7eb;"><td style="padding: 8px 0; color: #6b7280; font-size: 15px;">Amount Paid</td><td style="padding: 8px 0; color: #1d1d1f; font-size: 15px; font-weight: 600; text-align: right;">R${amount}</td></tr>
                   <tr style="border-top: 1px solid #e5e7eb;"><td style="padding: 8px 0; color: #6b7280; font-size: 15px;">Date</td><td style="padding: 8px 0; color: #1d1d1f; font-size: 15px; font-weight: 600; text-align: right;">${orderDate}</td></tr>
@@ -188,6 +203,7 @@ module.exports = async function handler(req, res) {
                   <tr><td style="padding: 6px 0; color: #6b7280; font-size: 14px; width: 40%;">Name</td><td style="padding: 6px 0; color: #1d1d1f; font-size: 14px; font-weight: 600;">${customerName}</td></tr>
                   <tr><td style="padding: 6px 0; color: #6b7280; font-size: 14px;">Email</td><td style="padding: 6px 0; color: #1d1d1f; font-size: 14px; font-weight: 600;">${customerEmail}</td></tr>
                   <tr><td style="padding: 6px 0; color: #6b7280; font-size: 14px;">Phone</td><td style="padding: 6px 0; color: #1d1d1f; font-size: 14px; font-weight: 600;">${customerPhone}</td></tr>
+                  <tr><td style="padding: 6px 0; color: #6b7280; font-size: 14px;">Package</td><td style="padding: 6px 0; color: #1d1d1f; font-size: 14px; font-weight: 600;">${packageName}</td></tr>
                   <tr><td style="padding: 6px 0; color: #6b7280; font-size: 14px;">Rim Size</td><td style="padding: 6px 0; color: #1d1d1f; font-size: 14px; font-weight: 600;">${rimSize} inches</td></tr>
                   <tr><td style="padding: 6px 0; color: #6b7280; font-size: 14px;">Amount</td><td style="padding: 6px 0; color: #1d1d1f; font-size: 14px; font-weight: 600;">R${amount}</td></tr>
                   <tr><td style="padding: 6px 0; color: #6b7280; font-size: 14px;">Order ID</td><td style="padding: 6px 0; color: #1d1d1f; font-size: 14px; font-weight: 600;">${orderId}</td></tr>
