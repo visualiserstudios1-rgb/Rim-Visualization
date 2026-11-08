@@ -174,7 +174,7 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Your Car Image *</label>
                   <UploadTile file={vehicleImage} onChange={setVehicleImage} />
                 </div>
-                <PaymentLoader open={sending} stage={stage} />
+                <PaymentLoader open={sending} stage={stage} packageName={selectedPackage.name} price={selectedPackage.price} rimSize={formData.rimInch} rimFile={rimImage} carFile={vehicleImage} />
                 <div style={{ backgroundColor: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb', textAlign: 'center' }}>
                   <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 4px 0' }}>Total amount due ({selectedPackage.name} package)</p>
                   <p style={{ fontSize: '28px', fontWeight: '700', color: 'black', margin: 0 }}>R{selectedPackage.price}</p>
