@@ -7,6 +7,7 @@ import { SkeletonImage } from '../components/SkeletonImage';
 import { IconAlert, IconLock, IconMail } from '../components/icons';
 import UploadTile from '../components/UploadTile';
 import PaymentLoader from '../components/PaymentLoader';
+import RimSizeSelect from '../components/RimSizeSelect';
 import PackageSelector, { PACKAGES } from '../components/PackageSelector';
 import { uploadToCloudinary, validateForm } from '../utils/cloudinary';
 import { buildMenuItems, buildSearchTargets } from './ThreeDPage';
@@ -160,11 +161,7 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Desired Rim Size *</label>
-                  <select value={formData.rimInch} onChange={(e) => setFormData({ ...formData, rimInch: e.target.value })}
-                    style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }}>
-                    <option value="">Select rim size</option>
-                    {['17','18','19','20','21','22','23'].map(s => <option key={s} value={s}>{s} inches</option>)}
-                  </select>
+                  <RimSizeSelect value={formData.rimInch} onChange={(size) => setFormData({ ...formData, rimInch: size })} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Rim Image *</label>
