@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import ReactGA from 'react-ga4';
 import { NavBar, DropdownMenu, SearchBar } from '../components/NavBar';
 import { SkeletonImage } from '../components/SkeletonImage';
-import { IconAlert, IconCheck, IconLoader, IconLock, IconMail } from '../components/icons';
+import { IconAlert, IconLock, IconMail } from '../components/icons';
+import UploadTile from '../components/UploadTile';
+import PaymentLoader from '../components/PaymentLoader';
 import PackageSelector, { PACKAGES } from '../components/PackageSelector';
 import { uploadToCloudinary, validateForm } from '../utils/cloudinary';
 import { buildMenuItems, buildSearchTargets } from './ThreeDPage';
@@ -14,7 +16,7 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
   const [rimImage, setRimImage]         = useState(null);
   const [vehicleImage, setVehicleImage] = useState(null);
   const [sending, setSending]           = useState(false);
-  const [uploadStatus, setUploadStatus] = useState('');
+  const [stage, setStage]             = useState(0);
   const [formError, setFormError]       = useState('');
   const [packageId, setPackageId]       = useState(2);
 
@@ -53,13 +55,14 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
     if (validationError) { setFormError(validationError); return; }
 
     ReactGA.event({ category: 'Purchase', action: 'payment_attempted' });
+    let redirecting = false;
     setSending(true);
+    setStage(0);
     try {
-      setUploadStatus('Uploading rim image...');
       const rimImageUrl = await uploadToCloudinary(rimImage);
-      setUploadStatus('Uploading car image...');
+      setStage(1);
       const vehicleImageUrl = await uploadToCloudinary(vehicleImage);
-      setUploadStatus('Preparing payment...');
+      setStage(2);
 
       const response = await fetch('/api/payment', {
         method: 'POST',
@@ -68,7 +71,14 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
       });
 
       const result = await response.json();
-      if (!response.ok) { setFormError(result.error || 'Something went wrong. Please try again.'); return; }
+      if (!response.ok) {
+        setFormError(result.error || 'Something went wrong. Please try again.');
+        document.getElementById('order')?.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+
+      setStage(3);
+      await new Promise((resolve) => setTimeout(resolve, 700));
 
       const form = document.createElement('form');
       form.method = 'POST';
@@ -79,10 +89,15 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
         form.appendChild(input);
       });
       document.body.appendChild(form);
+      redirecting = true;
       form.submit();
 
-    } catch { setFormError('Something went wrong. Please check your connection and try again.'); }
-    finally { setSending(false); setUploadStatus(''); }
+    } catch {
+      setFormError('Something went wrong. Please check your connection and try again.');
+      document.getElementById('order')?.scrollIntoView({ behavior: 'smooth' });
+    } finally {
+      if (!redirecting) { setSending(false); setStage(0); }
+    }
   };
 
   const onSelect      = (target) => { target.action(); setSearchOpen(false); setSearchText(''); };
@@ -153,22 +168,13 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Rim Image *</label>
-                  <input type="file" accept="image/jpeg,image/png,image/jpg" onChange={(e) => setRimImage(e.target.files[0])}
-                    style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', boxSizing: 'border-box' }} />
-                  {rimImage && <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}><IconCheck size={14} color="#16a34a" /> {rimImage.name}</p>}
+                  <UploadTile file={rimImage} onChange={setRimImage} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Upload Your Car Image *</label>
-                  <input type="file" accept="image/jpeg,image/png,image/jpg" onChange={(e) => setVehicleImage(e.target.files[0])}
-                    style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '16px', boxSizing: 'border-box' }} />
-                  {vehicleImage && <p style={{ color: '#16a34a', fontSize: '14px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}><IconCheck size={14} color="#16a34a" /> {vehicleImage.name}</p>}
+                  <UploadTile file={vehicleImage} onChange={setVehicleImage} />
                 </div>
-                {sending && uploadStatus && (
-                  <div style={{ textAlign: 'center', padding: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <IconLoader size={15} color="#0284c7" />
-                    <p style={{ color: '#0284c7', fontSize: '14px', margin: 0 }}>{uploadStatus}</p>
-                  </div>
-                )}
+                <PaymentLoader open={sending} stage={stage} />
                 <div style={{ backgroundColor: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb', textAlign: 'center' }}>
                   <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 4px 0' }}>Total amount due ({selectedPackage.name} package)</p>
                   <p style={{ fontSize: '28px', fontWeight: '700', color: 'black', margin: 0 }}>R{selectedPackage.price}</p>
@@ -177,7 +183,7 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
                 <button type="submit" disabled={sending}
                   style={{ width: '100%', padding: '16px', borderRadius: '9999px', backgroundColor: sending ? '#666' : 'black', color: 'white', fontSize: '16px', fontWeight: '600', border: 'none', cursor: sending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <IconLock size={15} color="white" />
-                  {sending ? 'Processing...' : `Pay R${selectedPackage.price} & Submit`}
+                  {sending ? 'Securing your order' : `Pay R${selectedPackage.price} & Submit`}
                 </button>
               </div>
             </form>
