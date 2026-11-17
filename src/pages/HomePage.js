@@ -213,7 +213,7 @@ export function HomePage({ isMobile, isTablet, page, setPage, menuOpen, setMenuO
           <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8 }}>Rim Visualizer is a South African visualisation company pioneering a new standard in automotive customisation. We give drivers the power to see their dream rims on their vehicle before committing to a purchase — eliminating guesswork and inspiring confidence.</p>
           <p style={{ fontSize: bodyFontSize, color: '#6b7280', fontWeight: '300', lineHeight: 1.8, marginTop: '16px' }}>Simple process. Professional results. Complete clarity.</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginTop: '48px', flexWrap: 'wrap' }}>
-            {[{ value: '30 MIN', label: 'Turnaround Time' }, { value: '99.9%', label: 'Satisfaction Focus' }, { value: 'SA ', label: 'Worldwide Service' }].map((stat, i) => (
+            {[{ value: '1h', label: 'Turnaround Time' }, { value: '99.9%', label: 'Satisfaction Focus' }, { value: 'SA ', label: 'Worldwide Service' }].map((stat, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: '36px', fontWeight: '700', color: 'black', margin: 0 }}>{stat.value}</p>
                 <p style={{ fontSize: '14px', color: '#6b7280', fontWeight: '400', marginTop: '4px' }}>{stat.label}</p>
